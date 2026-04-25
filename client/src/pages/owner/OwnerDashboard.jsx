@@ -53,7 +53,7 @@ export default function OwnerDashboard() {
           {loading ? <p style={{ color: 'var(--text-secondary)' }}>Loading…</p> : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Pickup</th><th>Status</th></tr></thead>
+                <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Pickup</th><th>Payment</th><th>Status</th></tr></thead>
                 <tbody>
                   {orders.map(o => (
                     <tr key={o._id}>
@@ -62,6 +62,11 @@ export default function OwnerDashboard() {
                       <td>{o.items.length}</td>
                       <td><strong>₹{o.totalAmount}</strong></td>
                       <td>{o.pickupDate} {o.pickupTime}</td>
+                      <td>
+                        <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : 'badge-red'}`}>
+                          {o.paymentStatus || 'Pending'}
+                        </span>
+                      </td>
                       <td><span className={`badge ${statusColor[o.status]}`}>{o.status}</span></td>
                     </tr>
                   ))}

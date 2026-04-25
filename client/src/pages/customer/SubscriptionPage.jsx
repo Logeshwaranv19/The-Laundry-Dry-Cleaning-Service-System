@@ -3,7 +3,6 @@ import Sidebar from '../../components/Sidebar';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { FiX, FiCheckCircle } from 'react-icons/fi';
-import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 
 export default function SubscriptionPage() {
@@ -25,36 +24,112 @@ export default function SubscriptionPage() {
 
   const handleSubscribeClick = (plan) => {
     setSelectedPlan(plan);
-    setShowPaymentModal(true);
+    initiatePayment(plan);
   };
 
-  const confirmSubscription = async (isPaid) => {
+  const initiatePayment = async (plan) => {
     setSubscribing(true);
     try {
-      await api.post('/customer/subscriptions/subscribe', { planId: selectedPlan._id, isPaid });
-      
-      if (isPaid) {
+      // 1. Create order on backend
+      const { data: order } = await api.post('/customer/razorpay/order', {
+        amount: plan.price,
+        receipt: `sub_${plan._id.slice(-10)}_${Date.now()}`
+      });
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Seykv3v4fWQhAc',
+        amount: order.amount,
+        currency: order.currency,
+        name: "The Laundry Service",
+        description: `Subscription: ${plan.name}`,
+        order_id: order.id,
+        handler: async (response) => {
+          await verifyAndSubscribe(response, plan);
+        },
+        prefill: {
+          name: "Customer Name",
+          email: "customer@example.com",
+        },
+        theme: {
+          color: "#2563eb",
+        },
+        modal: {
+          ondismiss: () => setSubscribing(false)
+        },
+        // Force UPI/GPay to show up prominently
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'UPI / Google Pay',
+                instruments: [{ method: 'upi' }]
+              }
+            },
+            sequence: ['block.upi', 'card', 'netbanking', 'wallet']
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to initiate payment');
+      setSubscribing(false);
+    }
+  };
+
+  const verifyAndSubscribe = async (paymentResponse, plan) => {
+    try {
+      // 1. Verify payment on backend
+      const { data: verification } = await api.post('/customer/razorpay/verify', paymentResponse);
+
+      if (verification.success) {
+        // 2. Finalize subscription
+        await api.post('/customer/subscriptions/subscribe', { planId: plan._id, isPaid: true });
+        
         setPaymentSuccess(true);
-        toast.success(`🎉 Payment for ${selectedPlan.name} successful!`);
+        setShowPaymentModal(true); // Show success modal
+        toast.success(`🎉 Payment for ${plan.name} successful!`);
+        
         setTimeout(() => {
           setShowPaymentModal(false);
           setPaymentSuccess(false);
           api.get('/customer/subscriptions').then(r => setPlans(r.data));
           api.get('/auth/me').then(r => setUserSub(r.data.activeSubscription));
           navigate('/customer/dashboard');
-        }, 2000);
-      } else {
-        toast.success(`🎉 Subscribed to ${selectedPlan.name}!`);
-        setShowPaymentModal(false);
-        api.get('/customer/subscriptions').then(r => setPlans(r.data));
-        api.get('/auth/me').then(r => setUserSub(r.data.activeSubscription));
-        navigate('/customer/dashboard');
+        }, 3000);
       }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment verification failed');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const confirmSubscription = async (isPaid) => {
+    // This is now purely for reference if needed, but initiatePayment is the main path.
+    // We could remove this if we are certain only Razorpay is allowed.
+    setSubscribing(true);
+    try {
+      await api.post('/customer/subscriptions/subscribe', { planId: selectedPlan._id, isPaid });
+      
+      toast.success(`🎉 Subscribed to ${selectedPlan.name}!`);
+      api.get('/customer/subscriptions').then(r => setPlans(r.data));
+      api.get('/auth/me').then(r => setUserSub(r.data.activeSubscription));
+      navigate('/customer/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Subscription failed');
     } finally { 
       setSubscribing(false); 
     }
+  };
+
+  // Helper to compare plan IDs
+  const isCurrentPlan = (plan) => {
+    if (!userSub) return false;
+    const subPlanId = userSub.planId?._id || userSub.planId;
+    return subPlanId === plan._id;
   };
 
   return (
@@ -72,35 +147,43 @@ export default function SubscriptionPage() {
           </div>
         ) : (
           <div className="grid grid-3">
-            {plans.map((plan, i) => (
-              <div key={plan._id} className={`plan-card ${i === 1 ? 'featured' : ''}`}>
-                <div style={{ marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>{plan.name}</div>
-                <div className="plan-price">
-                  <sup>₹</sup>{plan.price}<sub>/mo</sub>
+            {plans.map((plan, i) => {
+              const active = isCurrentPlan(plan);
+              return (
+                <div key={plan._id} className={`plan-card ${i === 1 ? 'featured' : ''} ${active ? 'active' : ''}`}>
+                  <div style={{ marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>{plan.name}</div>
+                  <div className="plan-price">
+                    <sup>₹</sup>{plan.price}<sub>/mo</sub>
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.75rem 0' }}>
+                    {plan.durationDays} days &nbsp;|&nbsp; <span style={{ color: 'var(--success)', fontWeight: 600 }}>{plan.discountPercent}% off</span> every order
+                  </div>
+                  <ul className="plan-features">
+                    {plan.freePickups > 0 && <li>{plan.freePickups} free pickups</li>}
+                    {plan.features.map((f, fi) => <li key={fi}>{f}</li>)}
+                  </ul>
+                  {active ? (
+                    <div style={{ marginTop: '1rem' }}>
+                      <button className="btn btn-success btn-full" disabled style={{ opacity: 1, cursor: 'default', marginBottom: '0.5rem' }}>
+                        <FiCheckCircle style={{ marginRight: '0.5rem' }} /> Current Plan
+                      </button>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                        Expires on: <strong>{new Date(userSub.endDate).toLocaleDateString()}</strong>
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      id={`subscribe-${plan._id}`}
+                      className="btn btn-primary btn-full"
+                      disabled={subscribing}
+                      onClick={() => handleSubscribeClick(plan)}
+                    >
+                      {subscribing && selectedPlan?._id === plan._id ? 'Subscribing…' : (userSub ? 'Switch Plan' : 'Subscribe Now')}
+                    </button>
+                  )}
                 </div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.75rem 0' }}>
-                  {plan.durationDays} days &nbsp;|&nbsp; <span style={{ color: 'var(--success)', fontWeight: 600 }}>{plan.discountPercent}% off</span> every order
-                </div>
-                <ul className="plan-features">
-                  {plan.freePickups > 0 && <li>{plan.freePickups} free pickups</li>}
-                  {plan.features.map((f, fi) => <li key={fi}>{f}</li>)}
-                </ul>
-                {userSub && userSub.planId === plan._id ? (
-                  <button className="btn btn-success btn-full" disabled style={{ opacity: 1, cursor: 'default' }}>
-                    <FiCheckCircle style={{ marginRight: '0.5rem' }} /> Current Plan
-                  </button>
-                ) : (
-                  <button
-                    id={`subscribe-${plan._id}`}
-                    className="btn btn-primary btn-full"
-                    disabled={subscribing}
-                    onClick={() => handleSubscribeClick(plan)}
-                  >
-                    {subscribing && selectedPlan?._id === plan._id ? 'Subscribing…' : 'Subscribe Now'}
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -136,37 +219,18 @@ export default function SubscriptionPage() {
                   <button className="btn-icon" onClick={() => setShowPaymentModal(false)}><FiX size={20} /></button>
                 </div>
 
-                <div style={{ background: 'white', padding: '2rem', borderRadius: '1rem', marginBottom: '1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ padding: '20px', background: 'white', borderRadius: '10px', boxShadow: '0 0 0 1px #eee' }}>
-                    <QRCodeSVG 
-                      value={`upi://pay?pa=logeshwaranv19@oksbi&pn=LOGESHWARAN%20V&am=${selectedPlan.price.toFixed(2)}&cu=INR&tn=Subscription%3A%20${selectedPlan.name}`}
-                      size={220}
-                      level="H"
-                      includeMargin={true}
-                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                    />
-                  </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '0.5rem', width: '100%', marginTop: '1rem' }}>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>UPI ID</p>
-                    <p style={{ fontWeight: 600, color: 'var(--accent)' }}>logeshwaranv19@oksbi</p>
-                  </div>
-                </div>
-
                 <div style={{ marginBottom: '1.5rem' }}>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Plan Price</p>
                   <h3 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>₹{selectedPlan.price}</h3>
                 </div>
 
-                <div className="grid grid-2" style={{ gap: '1rem' }}>
-                  <button className="btn btn-outline" onClick={() => confirmSubscription(false)} disabled={subscribing}>
-                    Pay Later
-                  </button>
-                  <button className="btn btn-primary" onClick={() => confirmSubscription(true)} disabled={subscribing}>
-                    <FiCheckCircle style={{ marginRight: '0.5rem' }} /> I've Paid
+                <div className="grid grid-1">
+                  <button className="btn btn-primary btn-full" onClick={() => initiatePayment(selectedPlan)} disabled={subscribing}>
+                    <FiCheckCircle style={{ marginRight: '0.5rem' }} /> Subscribe & Pay Now
                   </button>
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
-                  Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)
+                  Secure payment via Razorpay
                 </p>
               </>
             )}

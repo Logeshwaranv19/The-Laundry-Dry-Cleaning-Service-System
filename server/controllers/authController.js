@@ -49,6 +49,9 @@ exports.login = async (req, res) => {
 };
 
 exports.getMe = async (req, res) => {
-  const user = await User.findById(req.user._id).select('-password').populate('activeSubscription');
+  const user = await User.findById(req.user._id).select('-password').populate({
+    path: 'activeSubscription',
+    populate: { path: 'planId' }
+  });
   res.json(user);
 };

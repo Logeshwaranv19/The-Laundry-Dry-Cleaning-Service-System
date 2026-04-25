@@ -61,7 +61,7 @@ export default function ManageOrdersPage() {
             <div className="table-wrap">
               <table>
                 <thead>
-                  <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Pickup</th><th>Status</th><th>Delivery Boy</th><th>Update</th></tr>
+                  <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Pickup</th><th>Payment</th><th>Status</th><th>Delivery Boy</th><th>Update</th></tr>
                 </thead>
                 <tbody>
                   {filtered.map(o => (
@@ -74,6 +74,11 @@ export default function ManageOrdersPage() {
                       <td>{o.items.length}</td>
                       <td>₹{o.totalAmount}</td>
                       <td style={{ fontSize:'0.85rem' }}>{o.pickupDate}<br /><span style={{ color:'var(--text-secondary)' }}>{o.pickupTime}</span></td>
+                      <td>
+                        <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : 'badge-red'}`}>
+                          {o.paymentStatus || 'Pending'}
+                        </span>
+                      </td>
                       <td><span className={`badge ${statusColor[o.status]}`}>{o.status}</span></td>
                       <td>
                         <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}

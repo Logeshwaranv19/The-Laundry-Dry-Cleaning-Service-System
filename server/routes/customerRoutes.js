@@ -8,6 +8,7 @@ const {
   getSubscriptions, subscribe,
   fileComplaint, getMyComplaints
 } = require('../controllers/customerController');
+const { createRazorpayOrder, verifyRazorpayPayment, payOrder } = require('../controllers/paymentController');
 
 router.use(protect, authorize('customer'));
 
@@ -22,5 +23,10 @@ router.post('/subscriptions/subscribe', subscribe);
 
 router.post('/complaints', upload.single('photo'), fileComplaint);
 router.get('/complaints', getMyComplaints);
+
+// Payment routes
+router.post('/razorpay/order', createRazorpayOrder);
+router.post('/razorpay/verify', verifyRazorpayPayment);
+router.patch('/orders/:id/pay', payOrder);
 
 module.exports = router;

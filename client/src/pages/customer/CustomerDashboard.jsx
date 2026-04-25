@@ -107,7 +107,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Order</th><th>Items</th><th>Pickup</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Order</th><th>Items</th><th>Pickup</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   {orders.slice(0, 5).map(o => (
                     <tr key={o._id}>
@@ -115,6 +115,11 @@ export default function CustomerDashboard() {
                       <td>{o.items.length} item(s)</td>
                       <td>{o.pickupDate} {o.pickupTime}</td>
                       <td style={{ fontWeight: 600 }}>₹{o.totalAmount}</td>
+                      <td>
+                        <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : 'badge-red'}`}>
+                          {o.paymentStatus || 'Pending'}
+                        </span>
+                      </td>
                       <td><span className={`badge ${statusColor[o.status] || 'badge-blue'}`}>{o.status}</span></td>
                       <td><Link to={`/customer/orders/${o._id}`} className="btn btn-outline btn-sm">Track</Link></td>
                     </tr>

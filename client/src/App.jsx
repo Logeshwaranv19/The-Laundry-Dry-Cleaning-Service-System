@@ -24,7 +24,6 @@ import ComplaintsManager   from './pages/owner/ComplaintsManager';
 import SubscriptionManager from './pages/owner/SubscriptionManager';
 
 // Delivery pages
-import DeliveryDashboard from './pages/delivery/DeliveryDashboard';
 import MyDeliveries     from './pages/delivery/MyDeliveries';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -40,7 +39,7 @@ const AppRoutes = () => {
   const getHome = () => {
     if (!token || !user) return '/login';
     if (user.role === 'owner') return '/owner/dashboard';
-    if (user.role === 'delivery') return '/delivery';
+    if (user.role === 'delivery') return '/delivery/orders';
     return '/customer/dashboard';
   };
 
@@ -67,7 +66,6 @@ const AppRoutes = () => {
       <Route path="/owner/subscriptions"  element={<ProtectedRoute allowedRoles={['owner']}><SubscriptionManager /></ProtectedRoute>} />
 
       {/* Delivery */}
-      <Route path="/delivery" element={<ProtectedRoute allowedRoles={['delivery']}><DeliveryDashboard /></ProtectedRoute>} />
       <Route path="/delivery/orders" element={<ProtectedRoute allowedRoles={['delivery']}><MyDeliveries /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to={getHome()} replace />} />

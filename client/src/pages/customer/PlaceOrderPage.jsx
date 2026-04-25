@@ -4,7 +4,6 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiTrash2, FiX, FiCheckCircle } from 'react-icons/fi';
-import { QRCodeSVG } from 'qrcode.react';
 
 const FABRICS  = ['Cotton','Silk','Wool','Denim','Polyester','Linen','Leather'];
 const SERVICES = ['Wash','Dry Clean','Iron','Steam','Premium Wash','Stain Removal'];
@@ -26,7 +25,11 @@ export default function PlaceOrderPage() {
   useEffect(() => {
     api.get('/pricing').then(r => setPricing(r.data));
     api.get('/customer/loyalty').then(r => setLoyalty(r.data.balance));
-    api.get('/customer/subscriptions').then(r => setSub(r.data[0]));
+    api.get('/auth/me').then(r => {
+      if (r.data.activeSubscription && r.data.activeSubscription.active) {
+        setSub(r.data.activeSubscription);
+      }
+    });
   }, []);
 
   const getPrice = (fabric, service) => {
@@ -43,8 +46,15 @@ export default function PlaceOrderPage() {
   };
 
   const subtotal = items.reduce((sum, it) => sum + getPrice(it.fabricType, it.serviceType) * it.quantity, 0);
+  
+  // Calculate subscription discount
+  let subscriptionDiscount = 0;
+  if (subscription && subscription.planId) {
+    subscriptionDiscount = Math.floor(subtotal * (subscription.planId.discountPercent || 0) / 100);
+  }
+
   const loyaltyDiscount = Math.floor(Math.min(ptsToUse, loyalty) / 10);
-  const total = Math.max(0, subtotal - loyaltyDiscount);
+  const total = Math.max(0, subtotal - subscriptionDiscount - loyaltyDiscount);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,24 +62,90 @@ export default function PlaceOrderPage() {
     setShowPaymentModal(true);
   };
 
+  const initiatePayment = async () => {
+    setLoading(true);
+    try {
+      // 1. Create order on backend
+      const { data: ord } = await api.post('/customer/razorpay/order', {
+        amount: total,
+        receipt: `ord_${Date.now()}`
+      });
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Seykv3v4fWQhAc',
+        amount: ord.amount,
+        currency: ord.currency,
+        name: "The Laundry Service",
+        description: "Laundry Order Payment",
+        order_id: ord.id,
+        handler: async (response) => {
+          await verifyAndPlaceOrder(response);
+        },
+        prefill: {
+          name: "Customer Name",
+          email: "customer@example.com",
+        },
+        theme: {
+          color: "#2563eb",
+        },
+        modal: {
+          ondismiss: () => setLoading(false)
+        },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'UPI / Google Pay',
+                instruments: [{ method: 'upi' }]
+              }
+            },
+            sequence: ['block.upi', 'card', 'netbanking', 'wallet']
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to initiate payment');
+      setLoading(false);
+    }
+  };
+
+  const verifyAndPlaceOrder = async (paymentResponse) => {
+    try {
+      // 1. Verify payment on backend
+      const { data: verification } = await api.post('/customer/razorpay/verify', paymentResponse);
+
+      if (verification.success) {
+        // 2. Finalize order
+        await api.post('/customer/orders', { items, pickupDate, pickupTime, address, loyaltyPointsToUse: ptsToUse, isPaid: true });
+        
+        setPaymentSuccess(true);
+        toast.success('🎉 Payment successful!');
+        
+        setTimeout(() => {
+          setShowPaymentModal(false);
+          setPaymentSuccess(false);
+          navigate('/customer/orders');
+        }, 3000);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const confirmOrder = async (isPaid) => {
     setLoading(true);
     try {
       await api.post('/customer/orders', { items, pickupDate, pickupTime, address, loyaltyPointsToUse: ptsToUse, isPaid });
       
-      if (isPaid) {
-        setPaymentSuccess(true);
-        toast.success('🎉 Payment successful!');
-        setTimeout(() => {
-          setShowPaymentModal(false);
-          setPaymentSuccess(false);
-          navigate('/customer/orders');
-        }, 2000);
-      } else {
-        toast.success('🎉 Order placed successfully!');
-        setShowPaymentModal(false);
-        navigate('/customer/orders');
-      }
+      toast.success('🎉 Order placed successfully!');
+      setShowPaymentModal(false);
+      navigate('/customer/orders');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to place order');
     } finally { 
@@ -176,6 +252,12 @@ export default function PlaceOrderPage() {
                     <span style={{ color: 'var(--text-secondary)' }}>Subtotal</span>
                     <span>₹{subtotal}</span>
                   </div>
+                  {subscriptionDiscount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--success)' }}>Subscription Discount ({subscription.planId.discountPercent}%)</span>
+                      <span style={{ color: 'var(--success)' }}>-₹{subscriptionDiscount}</span>
+                    </div>
+                  )}
                   {loyaltyDiscount > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--success)' }}>Loyalty Discount</span>
@@ -230,22 +312,6 @@ export default function PlaceOrderPage() {
                   <button className="btn-icon" onClick={() => setShowPaymentModal(false)}><FiX size={20} /></button>
                 </div>
 
-                <div style={{ background: 'white', padding: '2rem', borderRadius: '1rem', marginBottom: '1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ padding: '20px', background: 'white', borderRadius: '10px', boxShadow: '0 0 0 1px #eee' }}>
-                    <QRCodeSVG 
-                      value={`upi://pay?pa=logeshwaranv19@oksbi&pn=LOGESHWARAN%20V&am=${total.toFixed(2)}&cu=INR&tn=Laundry%20Order`}
-                      size={220}
-                      level="H"
-                      includeMargin={true}
-                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                    />
-                  </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '0.5rem', width: '100%', marginTop: '1rem' }}>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>UPI ID</p>
-                    <p style={{ fontWeight: 600, color: 'var(--accent)' }}>logeshwaranv19@oksbi</p>
-                  </div>
-                </div>
-
                 <div style={{ marginBottom: '1.5rem' }}>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Amount to Pay</p>
                   <h3 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>₹{total}</h3>
@@ -255,12 +321,12 @@ export default function PlaceOrderPage() {
                   <button className="btn btn-outline" onClick={() => confirmOrder(false)} disabled={loading}>
                     Pay Later
                   </button>
-                  <button className="btn btn-primary" onClick={() => confirmOrder(true)} disabled={loading}>
-                    <FiCheckCircle style={{ marginRight: '0.5rem' }} /> I've Paid
+                  <button className="btn btn-primary" onClick={initiatePayment} disabled={loading}>
+                    <FiCheckCircle style={{ marginRight: '0.5rem' }} /> Pay Now
                   </button>
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
-                  Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)
+                  Secure payment via Razorpay
                 </p>
               </>
             )}

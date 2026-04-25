@@ -1,0 +1,102 @@
+# PROJECT DOCUMENTATION: Laundry & Dry Cleaning Service System
+# =========================================================
+
+This file provides a complete breakdown of every file in the project.
+
+---------------------------------------------------------
+1. SERVER SIDE (Backend)
+---------------------------------------------------------
+
+/server/server.js
+- Entry point for the backend. Sets up the Express app, connects to MongoDB, and registers all API routes.
+
+/server/.env
+- Stores sensitive environment variables like MONGO_URI, JWT_SECRET, and PORT.
+
+/server/package.json
+- Managed node dependencies and scripts for the server.
+
+/server/seed_pricing.js
+- A script used to pre-fill the database with initial pricing data for laundry services.
+
+/server/controllers/
+- Logic for handling specific requests:
+  - authController.js: User registration, login, and profile fetching.
+  - customerController.js: Logic for placing orders and managing customer data.
+  - deliveryController.js: Logic for delivery boys to update task statuses.
+  - ownerController.js: Logic for business administration and reporting.
+
+/server/models/
+- Database schemas (structures):
+  - User.js: Customer/Owner/Delivery accounts.
+  - Order.js: Laundry order details (items, price, status).
+  - Pricing.js: Price list for different fabric/service combinations.
+  - Subscription.js: Shared details of available subscription plans.
+  - UserSubscription.js: Specific subscription details for individual users.
+  - LoyaltyTransaction.js: Tracks rewards points earned by customers.
+  - Complaint.js: Records of customer issues/tickets.
+
+/server/routes/
+- URL endpoint mappings:
+  - authRoutes.js: Connects /api/auth/* to authController.
+  - customerRoutes.js: Connects /api/customer/* to customerController.
+  - deliveryRoutes.js: Connects /api/delivery/* to deliveryController.
+  - ownerRoutes.js: Connects /api/owner/* to ownerController.
+  - pricingRoutes.js: Connects /api/pricing/* to pricing controller.
+
+/server/middleware/
+- Security and utility layers:
+  - auth.js: Protects routes by checking JWT tokens and user roles.
+  - upload.js: Handles file storage (images) using Multer.
+
+/server/uploads/
+- Physical folder where uploaded files (like receipt images) are stored.
+
+
+---------------------------------------------------------
+2. CLIENT SIDE (Frontend)
+---------------------------------------------------------
+
+/client/index.html
+- The main HTML page that React mounts into.
+
+/client/package.json
+- Manages frontend dependencies and Vite build scripts.
+
+/client/vite.config.js
+- Configuration for the Vite development and build tool.
+
+/client/src/main.jsx
+- The main entry point where React is initialized.
+
+/client/src/App.jsx
+- The main routing file. Defines all the pages and protects them using roles.
+
+/client/src/index.css
+- Global styles, CSS variables, and the design system (Master Stylesheet).
+
+/client/src/App.css
+- Specific styles for the main App container.
+
+/client/src/api/axios.js
+- Central axios configuration. Automatically attaches login tokens to backend requests.
+
+/client/src/context/
+- Global state management:
+  - AuthContext.jsx: Manages user login state across the entire app.
+  - ThemeContext.jsx: Manages Dark/Light mode preference.
+
+/client/src/components/
+- Reusable UI elements:
+  - Sidebar.jsx: Navigation bar that changes based on user role.
+  - ThemeSwitcher.jsx: Toggle button for visual themes.
+
+/client/src/pages/
+- Functional groupings of full screens:
+  /auth/: Login and Signup pages.
+  /customer/: Place Order, Order Tracking, Loyalty, and Subscription pages.
+  /owner/: Manage Orders, Pricing Manager, and Complaints Manager.
+  /delivery/: Delivery Dashboard and My Deliveries tasks.
+
+=========================================================
+End of Documentation
