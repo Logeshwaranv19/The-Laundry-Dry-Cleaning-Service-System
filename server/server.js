@@ -25,7 +25,8 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB Connected (Atlas)');
   } catch (err) {
-    console.error('⚠️ Atlas connection failed. Trying local MongoDB...');
+    console.error('⚠️ Atlas connection failed:', err.message);
+    console.log('Trying local MongoDB...');
     try {
       
       await mongoose.connect('mongodb://127.0.0.1:27017/laundry');
