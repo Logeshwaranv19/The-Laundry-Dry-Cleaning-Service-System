@@ -8,7 +8,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'], credentials: true }));
+app.use(cors({ 
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'https://the-laundry-dry-cleaning-service-sy.vercel.app'
+  ], 
+  credentials: true 
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
