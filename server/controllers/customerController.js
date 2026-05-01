@@ -178,3 +178,37 @@ exports.getMyComplaints = async (req, res) => {
     res.json(complaints);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
+
+// ─── Pay Order (Mark as Paid) ────────────────────────────────────────────────
+exports.payOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (order.paymentStatus === 'Paid') {
+      return res.status(400).json({ message: 'Order is already paid' });
+    }
+
+    order.paymentStatus = 'Paid';
+    
+    // Award loyalty points if not already awarded
+    if (!order.loyaltyPointsAwarded && order.loyaltyPointsEarned > 0) {
+      const customer = await User.findById(req.user._id);
+      customer.loyaltyPoints += order.loyaltyPointsEarned;
+      order.loyaltyPointsAwarded = true;
+
+      await LoyaltyTransaction.create({
+        userId: customer._id, orderId: order._id,
+        type: 'earned', points: order.loyaltyPointsEarned,
+        description: `Earned from paid order #${order._id}`,
+        balance: customer.loyaltyPoints,
+      });
+      await customer.save();
+    }
+
+    await order.save();
+    res.json({ message: 'Payment status updated to Paid', order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

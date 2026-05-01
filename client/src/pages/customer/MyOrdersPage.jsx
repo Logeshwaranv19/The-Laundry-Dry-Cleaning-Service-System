@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiCheckCircle } from 'react-icons/fi';
+import { FiX, FiCheckCircle } from 'react-icons/fi';
+import { QRCodeSVG } from 'qrcode.react';
 
 const statusColor = {
   'Placed': 'badge-blue', 'Picked Up': 'badge-purple', 'Processing': 'badge-yellow',
@@ -14,6 +15,9 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     api.get('/customer/orders').then(r => { setOrders(r.data); setLoading(false); });
@@ -24,77 +28,25 @@ export default function MyOrdersPage() {
     o._id.toLowerCase().includes(search.toLowerCase())
   );
 
-  const [payingOrderId, setPayingOrderId] = useState(null);
-
-  const initiatePayment = async (order) => {
-    setPayingOrderId(order._id);
-    try {
-      // 1. Create Razorpay order
-      const { data: ord } = await api.post('/customer/razorpay/order', {
-        amount: order.totalAmount,
-        receipt: `ord_${order._id.slice(-10)}_${Date.now()}`
-      });
-
-      // 2. Open Razorpay Checkout
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Seykv3v4fWQhAc',
-        amount: ord.amount,
-        currency: ord.currency,
-        name: "The Laundry Service",
-        description: `Order Payment #${order._id.slice(-6)}`,
-        order_id: ord.id,
-        handler: async (response) => {
-          await verifyPayment(response, order._id);
-        },
-        prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-        },
-        theme: {
-          color: "#2563eb",
-        },
-        modal: {
-          ondismiss: () => setPayingOrderId(null)
-        },
-        config: {
-          display: {
-            blocks: {
-              upi: {
-                name: 'UPI / Google Pay',
-                instruments: [{ method: 'upi' }]
-              }
-            },
-            sequence: ['block.upi', 'card', 'netbanking', 'wallet']
-          }
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to initiate payment');
-      setPayingOrderId(null);
-    }
+  const handlePayClick = (order) => {
+    setSelectedOrder(order);
+    setShowPaymentModal(true);
   };
 
-  const verifyPayment = async (paymentResponse, orderId) => {
+  const confirmPayment = async () => {
+    setPaying(true);
     try {
-      // 1. Verify payment on backend
-      const { data: verification } = await api.post('/customer/razorpay/verify', paymentResponse);
-
-      if (verification.success) {
-        // 2. Update order status to Paid
-        await api.patch(`/customer/orders/${orderId}/pay`);
-        toast.success('🎉 Payment successful!');
-        
-        // Refresh orders
-        const r = await api.get('/customer/orders');
-        setOrders(r.data);
-      }
+      await api.patch(`/customer/orders/${selectedOrder._id}/pay`);
+      toast.success('🎉 Payment marked as successful!');
+      setShowPaymentModal(false);
+      
+      // Refresh orders
+      const r = await api.get('/customer/orders');
+      setOrders(r.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Payment verification failed');
+      toast.error(err.response?.data?.message || 'Failed to update payment status');
     } finally {
-      setPayingOrderId(null);
+      setPaying(false);
     }
   };
 
@@ -142,10 +94,9 @@ export default function MyOrdersPage() {
                           {o.paymentStatus === 'Pending' && (
                             <button 
                               className="btn btn-primary btn-sm" 
-                              onClick={() => initiatePayment(o)}
-                              disabled={payingOrderId === o._id}
+                              onClick={() => handlePayClick(o)}
                             >
-                              {payingOrderId === o._id ? '...' : 'Pay Now'}
+                              Pay Now
                             </button>
                           )}
                         </div>
@@ -158,6 +109,50 @@ export default function MyOrdersPage() {
           )}
         </div>
       </main>
+
+      {showPaymentModal && selectedOrder && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Complete Payment</h2>
+              <button className="btn-icon" onClick={() => setShowPaymentModal(false)}><FiX size={20} /></button>
+            </div>
+
+            <div style={{ background: 'white', padding: '2rem', borderRadius: '1rem', marginBottom: '1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ padding: '20px', background: 'white', borderRadius: '10px', boxShadow: '0 0 0 1px #eee' }}>
+                <QRCodeSVG 
+                  value={`upi://pay?pa=logeshwaranv19@oksbi&pn=LOGESHWARAN%20V&am=${selectedOrder.totalAmount.toFixed(2)}&cu=INR&tn=Order%20Payment%20%23${selectedOrder._id.slice(-6)}`}
+                  size={220}
+                  level="H"
+                  includeMargin={true}
+                  style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                />
+              </div>
+              <div style={{ background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '0.5rem', width: '100%', marginTop: '1rem' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>UPI ID</p>
+                <p style={{ fontWeight: 600, color: 'var(--accent)' }}>logeshwaranv19@oksbi</p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Amount to Pay</p>
+              <h3 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>₹{selectedOrder.totalAmount}</h3>
+            </div>
+
+            <div className="grid grid-2" style={{ gap: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setShowPaymentModal(false)} disabled={paying}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={confirmPayment} disabled={paying}>
+                <FiCheckCircle style={{ marginRight: '0.5rem' }} /> {paying ? 'Updating…' : "I've Paid"}
+              </button>
+            </div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
+              Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
