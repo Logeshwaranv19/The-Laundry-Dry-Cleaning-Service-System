@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
-import { FiCheck, FiClock, FiTruck } from 'react-icons/fi';
+import { FiCheck, FiClock, FiTruck, FiAlertCircle } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const STEPS = ['Placed','Picked Up','Processing','Ready','Out for Delivery','Delivered'];
 
 export default function OrderTrackingPage() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,6 +18,17 @@ export default function OrderTrackingPage() {
     api.get(`/customer/orders/${id}`).then(r => { setOrder(r.data); setLoading(false); });
   }, [id]);
 
+  const handleCancel = async () => {
+    if (!window.confirm('Are you sure you want to cancel this order? Any points used will be refunded.')) return;
+    try {
+      await api.patch(`/customer/orders/${id}/cancel`);
+      toast.success('Order cancelled successfully');
+      navigate('/customer/orders');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel order');
+    }
+  };
+
   if (loading) return <Layout><p style={{ color: 'var(--text-secondary)' }}>Loading order details…</p></Layout>;
   if (!order) return <Layout><p>Order not found</p></Layout>;
 
@@ -22,10 +36,25 @@ export default function OrderTrackingPage() {
 
   return (
     <Layout>
-      <div className="page-header">
-          <h1 className="page-title">Order Tracking</h1>
-          <p className="page-subtitle">Order #{order._id.slice(-8).toUpperCase()}</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 className="page-title">Order Tracking</h1>
+            <p className="page-subtitle">Order #{order._id.slice(-8).toUpperCase()}</p>
+          </div>
+          {order.status === 'Placed' && (
+            <button className="btn btn-danger" onClick={handleCancel}>Cancel Order</button>
+          )}
         </div>
+
+        {order.status === 'Cancelled' && (
+          <div className="card" style={{ background: 'var(--bg-danger)', borderColor: 'var(--danger)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <FiAlertCircle size={24} color="var(--danger)" />
+            <div>
+              <h3 style={{ color: 'var(--danger)', fontWeight: 700 }}>This order has been cancelled.</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>If this was a mistake, please place a new order.</p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-2" style={{ gap: '1.5rem' }}>
           {/* Tracking Steps */}

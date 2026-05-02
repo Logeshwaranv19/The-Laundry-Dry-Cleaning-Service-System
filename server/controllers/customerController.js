@@ -212,3 +212,48 @@ exports.payOrder = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ─── Cancel Order ───────────────────────────────────────────────────────────
+exports.cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (['Cancelled', 'Delivered', 'Ready', 'Processing'].includes(order.status)) {
+      return res.status(400).json({ message: `Cannot cancel order in '${order.status}' status` });
+    }
+
+    const customer = await User.findById(req.user._id);
+
+    // Revert loyalty points used
+    if (order.loyaltyPointsUsed > 0) {
+      customer.loyaltyPoints += order.loyaltyPointsUsed;
+      await LoyaltyTransaction.create({
+        userId: customer._id, orderId: order._id,
+        type: 'earned', points: order.loyaltyPointsUsed,
+        description: `Refunded points from cancelled order #${order._id}`,
+        balance: customer.loyaltyPoints,
+      });
+    }
+
+    // Deduct loyalty points earned (if they were already awarded)
+    if (order.loyaltyPointsAwarded && order.loyaltyPointsEarned > 0) {
+      customer.loyaltyPoints -= order.loyaltyPointsEarned;
+      await LoyaltyTransaction.create({
+        userId: customer._id, orderId: order._id,
+        type: 'redeemed', points: order.loyaltyPointsEarned,
+        description: `Reverted points from cancelled order #${order._id}`,
+        balance: customer.loyaltyPoints,
+      });
+    }
+
+    await customer.save();
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    res.json({ message: 'Order cancelled successfully', order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

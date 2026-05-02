@@ -49,6 +49,16 @@ export default function MyOrdersPage() {
       setPaying(false);
     }
   };
+  const handleCancel = async (id) => {
+    if (!window.confirm('Are you sure you want to cancel this order? Any points used will be refunded.')) return;
+    try {
+      await api.patch(`/customer/orders/${id}/cancel`);
+      toast.success('Order cancelled successfully');
+      setOrders(prev => prev.map(o => o._id === id ? { ...o, status: 'Cancelled' } : o));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel order');
+    }
+  };
 
   return (
     <Layout>
@@ -89,13 +99,16 @@ export default function MyOrdersPage() {
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <Link to={`/customer/orders/${o._id}`} className="btn btn-outline btn-sm">Track</Link>
-                          {o.paymentStatus === 'Pending' && (
+                          {o.paymentStatus === 'Pending' && o.status === 'Placed' && (
                             <button 
                               className="btn btn-primary btn-sm" 
                               onClick={() => handlePayClick(o)}
                             >
                               Pay Now
                             </button>
+                          )}
+                          {o.status === 'Placed' && (
+                            <button className="btn btn-danger btn-sm" onClick={() => handleCancel(o._id)}>Cancel</button>
                           )}
                         </div>
                       </td>
