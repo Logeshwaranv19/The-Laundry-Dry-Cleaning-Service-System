@@ -3,7 +3,7 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiTrash2, FiX, FiCheckCircle } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiX, FiCheckCircle, FiMinus } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
 import { FABRICS, SERVICES } from '../../constants';
@@ -134,8 +134,15 @@ export default function PlaceOrderPage() {
                       </div>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label className="form-label">Qty</label>
-                        <input type="number" className="form-input" min={1} value={item.quantity}
-                          onChange={e => updateItem(i, 'quantity', parseInt(e.target.value) || 1)} />
+                        <div style={{ display:'flex', alignItems:'center', background:'var(--bg-card)', borderRadius:'var(--radius-sm)', border:'1px solid var(--border)', overflow:'hidden', width:'fit-content' }}>
+                          <button type="button" style={{ border:'none', background:'none', padding:'0.5rem 0.75rem', cursor:'pointer', color:'var(--text-secondary)' }} 
+                            onClick={() => updateItem(i, 'quantity', Math.max(1, item.quantity - 1))}><FiMinus size={14}/></button>
+                          <input type="number" value={item.quantity} 
+                            style={{ width:'40px', border:'none', borderLeft:'1px solid var(--border)', borderRight:'1px solid var(--border)', textAlign:'center', fontWeight:700, background:'transparent', color:'var(--text-primary)', outline:'none', padding:'0.25rem 0' }}
+                            onChange={e => updateItem(i, 'quantity', Math.max(1, parseInt(e.target.value) || 1))} />
+                          <button type="button" style={{ border:'none', background:'none', padding:'0.5rem 0.75rem', cursor:'pointer', color:'var(--text-secondary)' }} 
+                            onClick={() => updateItem(i, 'quantity', item.quantity + 1)}><FiPlus size={14}/></button>
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
