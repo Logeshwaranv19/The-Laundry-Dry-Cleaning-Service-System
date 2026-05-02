@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiX, FiCheckCircle, FiTrash2 } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiTrash2, FiStar } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 
 const statusColor = {
@@ -18,6 +18,9 @@ export default function MyOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [showRateModal, setShowRateModal] = useState(false);
+  const [rateForm, setRateForm] = useState({ rating: 5, review: '' });
+  const [rating, setRating] = useState(false);
 
   useEffect(() => {
     api.get('/customer/orders').then(r => { setOrders(r.data); setLoading(false); });
@@ -69,6 +72,20 @@ export default function MyOrdersPage() {
       setOrders(prev => prev.filter(o => o._id !== id));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
+  const submitRating = async () => {
+    setRating(true);
+    try {
+      await api.patch(`/customer/orders/${selectedOrder._id}/rate`, rateForm);
+      toast.success('Thanks for your rating!');
+      setShowRateModal(false);
+      setOrders(prev => prev.map(o => o._id === selectedOrder._id ? { ...o, ...rateForm } : o));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit rating');
+    } finally {
+      setRating(false);
     }
   };
 
@@ -135,6 +152,14 @@ export default function MyOrdersPage() {
                           {o.status === 'Placed' && (
                             <button className="btn btn-danger btn-sm" onClick={() => handleCancel(o._id)}>Cancel</button>
                           )}
+                          {o.status === 'Delivered' && !o.rating && (
+                            <button className="btn btn-primary btn-sm" onClick={() => { setSelectedOrder(o); setShowRateModal(true); }}>Rate</button>
+                          )}
+                          {o.rating && (
+                            <div style={{ display:'flex', alignItems:'center', gap:'2px', color:'var(--warning)', fontWeight:700 }}>
+                              {o.rating} <FiStar fill="var(--warning)" size={12} />
+                            </div>
+                          )}
                           {['Delivered', 'Cancelled'].includes(o.status) && (
                             <button className="btn btn-icon" style={{ color:'var(--danger)' }} onClick={() => handleDelete(o._id)}>
                               <FiTrash2 />
@@ -190,6 +215,43 @@ export default function MyOrdersPage() {
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
               Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)
             </p>
+          </div>
+        </div>
+      )}
+
+      {showRateModal && selectedOrder && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Rate Your Order</h2>
+              <button className="btn-icon" onClick={() => setShowRateModal(false)}><FiX size={20} /></button>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Rating</label>
+              <div style={{ display:'flex', gap:'0.5rem', justifyContent:'center', margin:'1rem 0' }}>
+                {[1,2,3,4,5].map(num => (
+                  <FiStar key={num} size={32} 
+                    fill={num <= rateForm.rating ? "var(--warning)" : "none"}
+                    color={num <= rateForm.rating ? "var(--warning)" : "var(--text-secondary)"}
+                    style={{ cursor:'pointer' }}
+                    onClick={() => setRateForm({ ...rateForm, rating: num })} />
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Review (Optional)</label>
+              <textarea className="form-textarea" rows={3} placeholder="Tell us about your experience…"
+                value={rateForm.review} onChange={e => setRateForm({ ...rateForm, review: e.target.value })} />
+            </div>
+
+            <div className="grid grid-2" style={{ gap: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setShowRateModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={submitRating} disabled={rating}>
+                {rating ? 'Submitting…' : 'Submit Rating'}
+              </button>
+            </div>
           </div>
         </div>
       )}

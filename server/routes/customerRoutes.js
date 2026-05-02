@@ -7,7 +7,7 @@ const {
   getLoyalty,
   getSubscriptions, subscribe,
   fileComplaint, getMyComplaints,
-  payOrder, cancelOrder, deleteOrder, deleteAllFinishedOrders, deleteComplaint
+  payOrder, cancelOrder, deleteOrder, deleteAllFinishedOrders, deleteComplaint, rateOrder
 } = require('../controllers/customerController');
 
 router.use(protect, authorize('customer'));
@@ -30,5 +30,6 @@ router.delete('/complaints/:id', deleteComplaint);
 // Payment and Cancellation routes
 router.patch('/orders/:id/pay', payOrder);
 router.patch('/orders/:id/cancel', cancelOrder);
+router.patch('/orders/:id/rate', rateOrder);
 
 module.exports = router;

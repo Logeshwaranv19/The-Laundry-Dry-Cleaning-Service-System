@@ -27,6 +27,8 @@ const orderSchema = new mongoose.Schema({
   subscriptionDiscount:{ type: Number, default: 0 },
   loyaltyPointsAwarded:{ type: Boolean, default: false },
   paymentStatus:      { type: String, enum:['Pending','Paid','Verification Required'], default:'Pending' },
+  rating:             { type: Number, min: 1, max: 5 },
+  review:             { type: String, default: '' },
   notes:              { type: String, default: '' },
 }, { timestamps: true });
 

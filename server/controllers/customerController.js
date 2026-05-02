@@ -269,3 +269,20 @@ exports.deleteAllFinishedOrders = async (req, res) => {
     res.json({ message: `${result.deletedCount} orders removed from your history` });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
+
+exports.rateOrder = async (req, res) => {
+  try {
+    const { rating, review } = req.body;
+    if (!rating || rating < 1 || rating > 5) return res.status(400).json({ message: 'Invalid rating' });
+
+    const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (order.status !== 'Delivered') return res.status(400).json({ message: 'Only delivered orders can be rated' });
+
+    order.rating = rating;
+    order.review = review || '';
+    await order.save();
+
+    res.json({ message: 'Thank you for your feedback!', order });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiStar } from 'react-icons/fi';
 
 const STATUS_OPTIONS = ['Placed','Picked Up','Processing','Ready','Out for Delivery','Delivered','Cancelled'];
 const statusColor = {
@@ -112,7 +112,16 @@ export default function ManageOrdersPage() {
                           )}
                         </div>
                       </td>
-                      <td><span className={`badge ${statusColor[o.status]}`}>{o.status}</span></td>
+                      <td>
+                        <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+                          <span className={`badge ${statusColor[o.status]}`}>{o.status}</span>
+                          {o.rating && (
+                            <div style={{ display:'flex', alignItems:'center', gap:'2px', color:'var(--warning)', fontWeight:700, fontSize:'0.85rem' }}>
+                              {o.rating} <FiStar fill="var(--warning)" size={12} />
+                            </div>
+                          )}
+                        </div>
+                      </td>
                       <td>
                         <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}
                           value={o.deliveryBoyId?._id || o.deliveryBoyId || ''}
