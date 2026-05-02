@@ -94,6 +94,14 @@ exports.getPricing = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deletePricing = async (req, res) => {
+  try {
+    const pricing = await Pricing.findByIdAndDelete(req.params.id);
+    if (!pricing) return res.status(404).json({ message: 'Pricing not found' });
+    res.json({ message: 'Pricing deleted successfully' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 // ─── Complaints ──────────────────────────────────────────────────────────────
 exports.getAllComplaints = async (req, res) => {
   try {

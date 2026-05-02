@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { FiTrash2 } from 'react-icons/fi';
 
 import { FABRICS, SERVICES } from '../../constants';
 
@@ -28,6 +29,17 @@ export default function PricingManagerPage() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed');
     } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this pricing combination?')) return;
+    try {
+      await api.delete(`/owner/pricing/${id}`);
+      toast.success('Pricing deleted');
+      setPricing(prev => prev.filter(p => p._id !== id));
+    } catch (err) {
+      toast.error('Delete failed');
+    }
   };
 
   const editPrice = (p) => setForm({ fabricType: p.fabricType, serviceType: p.serviceType, pricePerPiece: p.pricePerPiece, description: p.description || '' });
@@ -78,14 +90,19 @@ export default function PricingManagerPage() {
             ) : (
               <div className="table-wrap">
                 <table>
-                  <thead><tr><th>Fabric</th><th>Service</th><th>Price/pc</th><th>Edit</th></tr></thead>
+                  <thead><tr><th>Fabric</th><th>Service</th><th>Price/pc</th><th>Actions</th></tr></thead>
                   <tbody>
                     {pricing.map(p => (
                       <tr key={p._id}>
                         <td><span className="badge badge-purple">{p.fabricType}</span></td>
                         <td>{p.serviceType}</td>
                         <td><strong style={{ color:'var(--accent)' }}>₹{p.pricePerPiece}</strong></td>
-                        <td><button className="btn btn-outline btn-sm" onClick={() => editPrice(p)}>Edit</button></td>
+                        <td>
+                          <div style={{ display:'flex', gap:'0.5rem' }}>
+                            <button className="btn btn-outline btn-sm" onClick={() => editPrice(p)}>Edit</button>
+                            <button className="btn btn-icon" style={{ color:'var(--danger)' }} onClick={() => handleDelete(p._id)}><FiTrash2 /></button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

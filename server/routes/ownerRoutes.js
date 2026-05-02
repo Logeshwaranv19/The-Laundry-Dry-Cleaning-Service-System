@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
   getAllOrders, updateOrderStatus, getDeliveryBoys, createDeliveryBoy, deleteDeliveryBoy,
-  createOrUpdatePricing, getPricing,
+  createOrUpdatePricing, getPricing, deletePricing,
   getAllComplaints, resolveComplaint,
   createSubscription, getSubscriptions, updateSubscription,
   getDashboardStats
@@ -21,6 +21,7 @@ router.delete('/delivery-boys/:id', deleteDeliveryBoy);
 
 router.post('/pricing', createOrUpdatePricing);
 router.get('/pricing', getPricing);
+router.delete('/pricing/:id', deletePricing);
 
 router.get('/complaints', getAllComplaints);
 router.put('/complaints/:id', resolveComplaint);
