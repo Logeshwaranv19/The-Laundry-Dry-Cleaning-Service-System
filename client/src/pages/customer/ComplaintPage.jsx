@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import Layout from '../../components/Layout';
+import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -106,7 +107,7 @@ export default function ComplaintPage() {
                       <span className={`badge ${statusColor[c.status] || 'badge-blue'}`}>{c.status}</span>
                     </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{c.description}</p>
-                    {c.photoUrl && <img src={`http://localhost:5000${c.photoUrl}`} alt="Evidence" className="complaint-photo" />}
+                    {c.photoUrl && <img src={`${API_BASE_URL}${c.photoUrl}`} alt="Evidence" className="complaint-photo" onClick={() => window.open(`${API_BASE_URL}${c.photoUrl}`, '_blank')} />}
                     {c.ownerNote && (
                       <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(79,156,249,0.08)', borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', color: 'var(--accent)' }}>
                         💬 Owner: {c.ownerNote}

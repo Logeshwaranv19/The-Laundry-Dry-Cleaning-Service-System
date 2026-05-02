@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
+import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -57,8 +58,8 @@ export default function ComplaintsManager() {
                       </td>
                       <td>
                         {c.photoUrl
-                          ? <img src={`http://localhost:5000${c.photoUrl}`} alt="Evidence" className="complaint-photo"
-                              onClick={() => window.open(`http://localhost:5000${c.photoUrl}`, '_blank')} />
+                          ? <img src={`${API_BASE_URL}${c.photoUrl}`} alt="Evidence" className="complaint-photo"
+                              onClick={() => window.open(`${API_BASE_URL}${c.photoUrl}`, '_blank')} />
                           : <span style={{ color:'var(--text-secondary)', fontSize:'0.8rem' }}>No photo</span>}
                       </td>
                       <td><span className={`badge ${statusColor[c.status]}`}>{c.status}</span></td>
@@ -77,7 +78,7 @@ export default function ComplaintsManager() {
             <div className="modal" onClick={e => e.stopPropagation()}>
               <h2 className="modal-title">Resolve Complaint</h2>
               <p style={{ color:'var(--text-secondary)', fontSize:'0.88rem', marginBottom:'1rem' }}>{modal.description}</p>
-              {modal.photoUrl && <img src={`http://localhost:5000${modal.photoUrl}`} alt="Evidence" style={{ width:'100%', borderRadius:'var(--radius-sm)', marginBottom:'1rem', maxHeight:'200px', objectFit:'cover' }} />}
+              {modal.photoUrl && <img src={`${API_BASE_URL}${modal.photoUrl}`} alt="Evidence" style={{ width:'100%', borderRadius:'var(--radius-sm)', marginBottom:'1rem', maxHeight:'200px', objectFit:'cover', cursor:'pointer' }} onClick={() => window.open(`${API_BASE_URL}${modal.photoUrl}`, '_blank')} />}
               <div className="form-group">
                 <label className="form-label">Update Status</label>
                 <select className="form-select" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
