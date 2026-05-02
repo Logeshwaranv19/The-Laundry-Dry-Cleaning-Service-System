@@ -15,11 +15,16 @@ exports.updateDeliveryStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const allowedStatuses = ['Picked Up', 'Out for Delivery', 'Delivered'];
-    if (!allowedStatuses.includes(status))
-      return res.status(400).json({ message: 'Invalid status for delivery update' });
-
+    
     const order = await Order.findOne({ _id: req.params.id, deliveryBoyId: req.user._id });
     if (!order) return res.status(404).json({ message: 'Order not found or not assigned to you' });
+
+    if (!allowedStatuses.includes(status))
+      return res.status(400).json({ message: 'Invalid status for delivery update' });
+    
+    if (order.status === 'Cancelled' || order.status === 'Delivered') {
+      return res.status(400).json({ message: `Cannot update status of a ${order.status} order` });
+    }
 
     order.status = status;
 

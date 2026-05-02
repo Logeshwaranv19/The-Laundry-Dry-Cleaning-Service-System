@@ -89,19 +89,16 @@ export default function MyDeliveries() {
                     {o.status === 'Processing' && (
                       <span style={{ color:'var(--badge-yellow-text)', fontSize:'0.85rem', fontWeight:600 }}>🫧 Washing in Progress...</span>
                     )}
-                    {o.status === 'Ready' && (
-                      <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
-                        <span style={{ color:'var(--success)', fontSize:'0.85rem', fontWeight:600 }}>✨ Wash Completed!</span>
-                        <button className="btn btn-primary" disabled={updating === o._id}
-                          onClick={() => updateStatus(o._id, 'Out for Delivery')}>
-                          {updating === o._id ? '…' : '🚴 Start Final Delivery'}
-                        </button>
-                      </div>
-                    )}
-                    {o.status === 'Out for Delivery' && (
-                      <button className="btn btn-success" disabled={updating === o._id}
+                    {(o.status === 'Ready' || o.status === 'Out for Delivery') && (
+                      <button className="btn btn-success" style={{ fontWeight:700, padding:'0.75rem' }} disabled={updating === o._id}
                         onClick={() => updateStatus(o._id, 'Delivered')}>
                         {updating === o._id ? '…' : '✅ Mark Delivered (To Customer)'}
+                      </button>
+                    )}
+                    {o.status === 'Ready' && (
+                      <button className="btn btn-outline btn-sm" disabled={updating === o._id}
+                        onClick={() => updateStatus(o._id, 'Out for Delivery')}>
+                        {updating === o._id ? '…' : '🚴 Start Final Delivery'}
                       </button>
                     )}
                     {o.status === 'Delivered' && (

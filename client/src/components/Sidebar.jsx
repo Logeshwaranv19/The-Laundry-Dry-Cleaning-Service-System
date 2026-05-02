@@ -22,7 +22,8 @@ const ownerLinks = [
 ];
 
 const deliveryLinks = [
-  { to: '/delivery/orders',   icon: <FiTruck />,  label: 'My Deliveries' },
+  { to: '/delivery/dashboard', icon: <FiHome />,   label: 'Dashboard' },
+  { to: '/delivery/orders',    icon: <FiTruck />,  label: 'My Deliveries' },
 ];
 
 const roleLinks = { customer: customerLinks, owner: ownerLinks, delivery: deliveryLinks };
