@@ -168,8 +168,21 @@ export default function PlaceOrderPage() {
                   </p>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Points to Use</label>
-                    <input type="number" className="form-input" min={0} max={loyalty} value={ptsToUse}
-                      onChange={e => setPts(Math.min(parseInt(e.target.value) || 0, loyalty))} />
+                    <div style={{ display:'flex', gap:'0.5rem', alignItems:'center' }}>
+                      <div style={{ display:'flex', alignItems:'center', background:'var(--bg-card)', borderRadius:'var(--radius-sm)', border:'1px solid var(--border)', overflow:'hidden', width:'fit-content' }}>
+                        <button type="button" style={{ border:'none', background:'none', padding:'0.5rem 0.75rem', cursor:'pointer', color:'var(--text-secondary)' }} 
+                          onClick={() => setPts(prev => Math.max(0, prev - 10))}><FiMinus size={14}/></button>
+                        <input type="number" value={ptsToUse} 
+                          style={{ width:'60px', border:'none', borderLeft:'1px solid var(--border)', borderRight:'1px solid var(--border)', textAlign:'center', fontWeight:700, background:'transparent', color:'var(--text-primary)', outline:'none', padding:'0.25rem 0' }}
+                          onChange={e => {
+                            const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                            setPts(Math.min(Math.max(0, val || 0), loyalty));
+                          }} />
+                        <button type="button" style={{ border:'none', background:'none', padding:'0.5rem 0.75rem', cursor:'pointer', color:'var(--text-secondary)' }} 
+                          onClick={() => setPts(prev => Math.min(loyalty, prev + 10))}><FiPlus size={14}/></button>
+                      </div>
+                      <button type="button" className="btn btn-outline btn-sm" style={{ whiteSpace:'nowrap', height:'40px' }} onClick={() => setPts(loyalty)}>Use All</button>
+                    </div>
                   </div>
                   {ptsToUse > 0 && <p style={{ color: 'var(--success)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
                     Save ₹{loyaltyDiscount} with {ptsToUse} points
