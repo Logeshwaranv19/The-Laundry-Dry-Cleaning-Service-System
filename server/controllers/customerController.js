@@ -230,22 +230,24 @@ exports.cancelOrder = async (req, res) => {
     const customer = await User.findById(req.user._id);
 
     // Revert loyalty points used
-    if (order.loyaltyPointsUsed > 0) {
-      customer.loyaltyPoints += order.loyaltyPointsUsed;
+    const used = Number(order.loyaltyPointsUsed || 0);
+    if (used > 0) {
+      customer.loyaltyPoints = (customer.loyaltyPoints || 0) + used;
       await LoyaltyTransaction.create({
         userId: customer._id, orderId: order._id,
-        type: 'earned', points: order.loyaltyPointsUsed,
+        type: 'earned', points: used,
         description: `Refunded points from cancelled order #${order._id.toString().slice(-6)}`,
         balance: customer.loyaltyPoints,
       });
     }
 
     // Deduct loyalty points earned (if they were already awarded)
-    if (order.loyaltyPointsAwarded && order.loyaltyPointsEarned > 0) {
-      customer.loyaltyPoints -= order.loyaltyPointsEarned;
+    const earned = Number(order.loyaltyPointsEarned || 0);
+    if (order.loyaltyPointsAwarded && earned > 0) {
+      customer.loyaltyPoints = Math.max(0, (customer.loyaltyPoints || 0) - earned);
       await LoyaltyTransaction.create({
         userId: customer._id, orderId: order._id,
-        type: 'redeemed', points: order.loyaltyPointsEarned,
+        type: 'redeemed', points: earned,
         description: `Reverted points from cancelled order #${order._id.toString().slice(-6)}`,
         balance: customer.loyaltyPoints,
       });
