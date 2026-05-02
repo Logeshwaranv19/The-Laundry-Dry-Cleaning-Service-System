@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
-import { FiCheck, FiClock, FiTruck, FiAlertCircle } from 'react-icons/fi';
+import { FiCheck, FiClock, FiTruck, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,9 +38,12 @@ export default function OrderTrackingPage() {
   return (
     <Layout>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="page-title">Order Tracking</h1>
-            <p className="page-subtitle">Order #{order._id.slice(-8).toUpperCase()}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button className="btn btn-icon" onClick={() => navigate(-1)} style={{ fontSize: '1.25rem' }}><FiArrowLeft /></button>
+            <div>
+              <h1 className="page-title">Order Tracking</h1>
+              <p className="page-subtitle">Order #{order._id.slice(-8).toUpperCase()}</p>
+            </div>
           </div>
           {order.status === 'Placed' && (
             <button className="btn btn-danger" onClick={handleCancel}>Cancel Order</button>

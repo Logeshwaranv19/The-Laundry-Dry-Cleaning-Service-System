@@ -3,11 +3,13 @@ import Layout from '../../components/Layout';
 import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const statusColor = { 'Open':'badge-yellow','In Review':'badge-blue','Resolved':'badge-green','Rejected':'badge-red' };
 
 export default function ComplaintsManager() {
+  const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [modal, setModal]           = useState(null);
@@ -45,9 +47,12 @@ export default function ComplaintsManager() {
 
   return (
     <Layout>
-      <div className="page-header">
-          <h1 className="page-title">Complaints Manager</h1>
-          <p className="page-subtitle">Review and resolve customer quality complaints</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="btn btn-icon" onClick={() => navigate(-1)} style={{ fontSize: '1.25rem' }}><FiArrowLeft /></button>
+          <div>
+            <h1 className="page-title">Complaints Manager</h1>
+            <p className="page-subtitle">Review and resolve customer quality complaints</p>
+          </div>
         </div>
 
         <div className="card">

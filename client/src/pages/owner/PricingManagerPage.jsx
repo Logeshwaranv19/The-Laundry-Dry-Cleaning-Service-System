@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 import { FABRICS, SERVICES } from '../../constants';
 
 export default function PricingManagerPage() {
+  const navigate = useNavigate();
   const [pricing, setPricing] = useState([]);
   const [form, setForm]       = useState({ fabricType: FABRICS[0], serviceType: SERVICES[0], pricePerPiece:'', description:'' });
   const [loading, setLoading] = useState(true);
@@ -46,9 +48,12 @@ export default function PricingManagerPage() {
 
   return (
     <Layout>
-      <div className="page-header">
-          <h1 className="page-title">Fabric-wise Pricing</h1>
-          <p className="page-subtitle">Set prices per fabric type and service</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="btn btn-icon" onClick={() => navigate(-1)} style={{ fontSize: '1.25rem' }}><FiArrowLeft /></button>
+          <div>
+            <h1 className="page-title">Fabric-wise Pricing</h1>
+            <p className="page-subtitle">Set prices per fabric type and service</p>
+          </div>
         </div>
 
         <div className="grid grid-2" style={{ gap: '1.5rem' }}>

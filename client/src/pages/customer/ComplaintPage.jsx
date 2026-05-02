@@ -3,11 +3,13 @@ import Layout from '../../components/Layout';
 import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const statusColor = { 'Open':'badge-yellow', 'In Review':'badge-blue', 'Resolved':'badge-green', 'Rejected':'badge-red' };
 
 export default function ComplaintPage() {
+  const navigate = useNavigate();
   const [orders, setOrders]    = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [form, setForm]        = useState({ orderId: '', description: '' });
@@ -60,9 +62,12 @@ export default function ComplaintPage() {
 
   return (
     <Layout>
-      <div className="page-header">
-          <h1 className="page-title">Quality Complaints</h1>
-          <p className="page-subtitle">Report a quality issue with your laundry service</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="btn btn-icon" onClick={() => navigate(-1)} style={{ fontSize: '1.25rem' }}><FiArrowLeft /></button>
+          <div>
+            <h1 className="page-title">Quality Complaints</h1>
+            <p className="page-subtitle">Report a quality issue with your laundry service</p>
+          </div>
         </div>
 
         <div className="grid grid-2" style={{ gap: '1.5rem' }}>
