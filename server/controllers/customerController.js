@@ -216,11 +216,15 @@ exports.payOrder = async (req, res) => {
 // ─── Cancel Order ───────────────────────────────────────────────────────────
 exports.cancelOrder = async (req, res) => {
   try {
+    console.log(`Attempting to cancel order: ${req.params.id} for user: ${req.user._id}`);
     const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
 
-    if (['Cancelled', 'Delivered', 'Ready', 'Processing'].includes(order.status)) {
-      return res.status(400).json({ message: `Cannot cancel order in '${order.status}' status` });
+    if (order.status !== 'Placed') {
+      return res.status(400).json({ message: `Cannot cancel order in '${order.status}' status. Only 'Placed' orders can be cancelled.` });
     }
 
     const customer = await User.findById(req.user._id);
@@ -231,7 +235,7 @@ exports.cancelOrder = async (req, res) => {
       await LoyaltyTransaction.create({
         userId: customer._id, orderId: order._id,
         type: 'earned', points: order.loyaltyPointsUsed,
-        description: `Refunded points from cancelled order #${order._id}`,
+        description: `Refunded points from cancelled order #${order._id.toString().slice(-6)}`,
         balance: customer.loyaltyPoints,
       });
     }
@@ -242,7 +246,7 @@ exports.cancelOrder = async (req, res) => {
       await LoyaltyTransaction.create({
         userId: customer._id, orderId: order._id,
         type: 'redeemed', points: order.loyaltyPointsEarned,
-        description: `Reverted points from cancelled order #${order._id}`,
+        description: `Reverted points from cancelled order #${order._id.toString().slice(-6)}`,
         balance: customer.loyaltyPoints,
       });
     }
@@ -252,8 +256,10 @@ exports.cancelOrder = async (req, res) => {
     order.status = 'Cancelled';
     await order.save();
 
+    console.log(`Order ${order._id} successfully cancelled.`);
     res.json({ message: 'Order cancelled successfully', order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Cancellation error:', err);
+    res.status(500).json({ message: 'Internal server error during cancellation' });
   }
 };

@@ -33,6 +33,7 @@ export default function OrderTrackingPage() {
   if (!order) return <Layout><p>Order not found</p></Layout>;
 
   const currentIdx = STEPS.indexOf(order.status);
+  const isCancelled = order.status === 'Cancelled';
 
   return (
     <Layout>
@@ -58,28 +59,30 @@ export default function OrderTrackingPage() {
 
         <div className="grid grid-2" style={{ gap: '1.5rem' }}>
           {/* Tracking Steps */}
-          <div className="card">
-            <h2 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Live Status</h2>
-            <div className="tracking-steps">
-              {STEPS.map((step, i) => {
-                const done   = i < currentIdx || order.status === 'Delivered';
-                const active = i === currentIdx && order.status !== 'Delivered';
-                const icon   = done ? <FiCheck /> : active ? <FiTruck /> : <FiClock />;
-                return (
-                  <div key={step} className="step">
-                    <div className="step-icon-wrap">
-                      <div className={`step-icon ${done ? 'done' : active ? 'active' : ''}`}>{icon}</div>
-                      {i < STEPS.length - 1 && <div className={`step-line ${done ? 'done' : ''}`} />}
+          {!isCancelled && (
+            <div className="card">
+              <h2 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Live Status</h2>
+              <div className="tracking-steps">
+                {STEPS.map((step, i) => {
+                  const done   = i < currentIdx || order.status === 'Delivered';
+                  const active = i === currentIdx && order.status !== 'Delivered';
+                  const icon   = done ? <FiCheck /> : active ? <FiTruck /> : <FiClock />;
+                  return (
+                    <div key={step} className="step">
+                      <div className="step-icon-wrap">
+                        <div className={`step-icon ${done ? 'done' : active ? 'active' : ''}`}>{icon}</div>
+                        {i < STEPS.length - 1 && <div className={`step-line ${done ? 'done' : ''}`} />}
+                      </div>
+                      <div className="step-content">
+                        <div className="step-title" style={{ color: done ? 'var(--success)' : active ? 'var(--accent)' : 'var(--text-secondary)' }}>{step}</div>
+                        {active && <div className="step-date">Currently at this stage</div>}
+                      </div>
                     </div>
-                    <div className="step-content">
-                      <div className="step-title" style={{ color: done ? 'var(--success)' : active ? 'var(--accent)' : 'var(--text-secondary)' }}>{step}</div>
-                      {active && <div className="step-date">Currently at this stage</div>}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Order Details */}
           <div>
