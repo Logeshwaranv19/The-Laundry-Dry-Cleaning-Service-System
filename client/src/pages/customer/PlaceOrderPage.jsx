@@ -113,7 +113,6 @@ export default function PlaceOrderPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Laundry Items</h2>
                   <div style={{ display:'flex', gap:'0.5rem' }}>
-                    <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowRatesModal(true)}>📖 View Rates</button>
                     <button type="button" className="btn btn-primary btn-sm" onClick={addItem}><FiPlus /> Add Item</button>
                   </div>
                 </div>
@@ -310,34 +309,6 @@ export default function PlaceOrderPage() {
                 </p>
               </>
             )}
-          </div>
-        </div>
-      )}
-      {showRatesModal && (
-        <div className="modal-overlay" onClick={() => setShowRatesModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Service Rates</h2>
-              <button className="btn-icon" onClick={() => setShowRatesModal(false)}><FiX size={20} /></button>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead><tr><th>Fabric</th><th>Service</th><th>Rate/pc</th></tr></thead>
-                <tbody>
-                  {pricing.map(p => (
-                    <tr key={p._id}>
-                      <td style={{ fontSize:'0.85rem' }}>{p.fabricType}</td>
-                      <td style={{ fontSize:'0.85rem' }}>{p.serviceType}</td>
-                      <td style={{ fontWeight:700, color:'var(--accent)' }}>₹{p.pricePerPiece}</td>
-                    </tr>
-                  ))}
-                  {pricing.length === 0 && <tr><td colSpan="3" style={{ textAlign:'center', padding:'2rem', color:'var(--text-secondary)' }}>No rates set yet</td></tr>}
-                </tbody>
-              </table>
-            </div>
-            <p style={{ marginTop:'1rem', fontSize:'0.8rem', color:'var(--text-secondary)', textAlign:'center' }}>
-              * If your combination is not listed, a default base rate of ₹50 will be applied.
-            </p>
           </div>
         </div>
       )}

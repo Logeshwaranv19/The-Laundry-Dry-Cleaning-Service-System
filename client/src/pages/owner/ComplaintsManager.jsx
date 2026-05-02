@@ -99,8 +99,19 @@ export default function ComplaintsManager() {
           <div className="modal-overlay" onClick={() => setModal(null)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
               <h2 className="modal-title">Resolve Complaint</h2>
-              <p style={{ color:'var(--text-secondary)', fontSize:'0.88rem', marginBottom:'1rem' }}>{modal.description}</p>
-              {modal.photoUrl && <img src={`${API_BASE_URL}${modal.photoUrl}`} alt="Evidence" style={{ width:'100%', borderRadius:'var(--radius-sm)', marginBottom:'1rem', maxHeight:'200px', objectFit:'cover', cursor:'pointer' }} onClick={() => window.open(`${API_BASE_URL}${modal.photoUrl}`, '_blank')} />}
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1rem' }}>{modal.description}</p>
+              {modal.photoUrl ? (
+                <img 
+                  src={`${API_BASE_URL.replace(/\/$/, '')}${modal.photoUrl}`} 
+                  alt="Evidence" 
+                  style={{ width:'100%', borderRadius:'var(--radius-sm)', cursor:'pointer', marginBottom:'1rem' }}
+                  onClick={() => window.open(`${API_BASE_URL.replace(/\/$/, '')}${modal.photoUrl}`, '_blank')}
+                  onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
+                />
+              ) : null}
+              <div style={{ display: 'none', padding: '1rem', background: 'var(--bg-secondary)', textAlign: 'center', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                🖼️ Image not available
+              </div>
               <div className="form-group">
                 <label className="form-label">Update Status</label>
                 <select className="form-select" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>

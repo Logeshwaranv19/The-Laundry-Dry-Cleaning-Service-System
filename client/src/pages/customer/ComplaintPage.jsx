@@ -127,7 +127,19 @@ export default function ComplaintPage() {
                       </div>
                     </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{c.description}</p>
-                    {c.photoUrl && <img src={`${API_BASE_URL}${c.photoUrl}`} alt="Evidence" className="complaint-photo" onClick={() => window.open(`${API_BASE_URL}${c.photoUrl}`, '_blank')} />}
+                    {c.photoUrl ? (
+                      <img 
+                        src={`${API_BASE_URL.replace(/\/$/, '')}${c.photoUrl}`} 
+                        alt="Evidence" 
+                        className="complaint-photo" 
+                        style={{ cursor:'pointer', width:'100%', borderRadius:'var(--radius-sm)' }}
+                        onClick={() => window.open(`${API_BASE_URL.replace(/\/$/, '')}${c.photoUrl}`, '_blank')}
+                        onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
+                      />
+                    ) : null}
+                    <div style={{ display: 'none', padding: '1rem', background: 'var(--bg-secondary)', textAlign: 'center', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+                      🖼️ Image not available
+                    </div>
                     {c.ownerNote && (
                       <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(79,156,249,0.08)', borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', color: 'var(--accent)' }}>
                         💬 Owner: {c.ownerNote}

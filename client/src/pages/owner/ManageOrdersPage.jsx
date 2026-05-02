@@ -83,47 +83,47 @@ export default function ManageOrdersPage() {
           {loading ? <p style={{ color: 'var(--text-secondary)' }}>Loading…</p> : filtered.length === 0 ? (
             <div className="empty-state"><div className="icon">📦</div><p>No orders found</p></div>
           ) : (
-            <div className="table-wrap">
-              <table>
+            <div className="table-wrap" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ minWidth: '900px' }}>
                 <thead>
                   <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Pickup</th><th>Payment</th><th>Status</th><th>Delivery Boy</th><th>Update</th></tr>
                 </thead>
                 <tbody>
                   {filtered.map(o => (
                     <tr key={o._id}>
-                      <td style={{ fontFamily:'monospace', fontSize:'0.8rem' }}>{o._id.slice(-8).toUpperCase()}</td>
+                      <td style={{ fontFamily:'monospace', fontSize:'0.75rem' }}>{o._id.slice(-8).toUpperCase()}</td>
                       <td>
-                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{o.customerId?.name}</div>
-                        <div style={{ color:'var(--text-secondary)', fontSize:'0.78rem' }}>{o.customerId?.phone}</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>{o.customerId?.name}</div>
+                        <div style={{ color:'var(--text-secondary)', fontSize:'0.72rem' }}>{o.customerId?.phone}</div>
                       </td>
-                      <td>{o.items.length}</td>
-                      <td>₹{o.totalAmount}</td>
-                      <td style={{ fontSize:'0.85rem' }}>{o.pickupDate}<br /><span style={{ color:'var(--text-secondary)' }}>{o.pickupTime}</span></td>
+                      <td style={{ fontSize: '0.82rem' }}>{o.items.length}</td>
+                      <td style={{ fontWeight: 700, fontSize: '0.82rem' }}>₹{o.totalAmount}</td>
+                      <td style={{ fontSize:'0.75rem' }}>{o.pickupDate}<br /><span style={{ color:'var(--text-secondary)' }}>{o.pickupTime}</span></td>
                       <td>
-                        <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
-                          <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : o.paymentStatus === 'Verification Required' ? 'badge-yellow' : 'badge-red'}`}>
+                        <div style={{ display:'flex', flexDirection:'column', gap:'0.3rem' }}>
+                          <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : o.paymentStatus === 'Verification Required' ? 'badge-yellow' : 'badge-red'}`} style={{ fontSize:'0.7rem' }}>
                             {o.paymentStatus || 'Pending'}
                           </span>
                           {o.paymentStatus !== 'Paid' && (
-                            <button className="btn btn-outline btn-sm" style={{ fontSize:'0.7rem', padding:'0.2rem' }}
+                            <button className="btn btn-outline btn-sm" style={{ fontSize:'0.65rem', padding:'0.2rem' }}
                               onClick={() => updateOrder(o._id, { paymentStatus: 'Paid' })}>
-                              Confirm Payment
+                              Confirm
                             </button>
                           )}
                         </div>
                       </td>
                       <td>
-                        <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
-                          <span className={`badge ${statusColor[o.status]}`}>{o.status}</span>
+                        <div style={{ display:'flex', alignItems:'center', gap:'0.3rem' }}>
+                          <span className={`badge ${statusColor[o.status]}`} style={{ fontSize:'0.7rem' }}>{o.status}</span>
                           {o.rating && (
-                            <div style={{ display:'flex', alignItems:'center', gap:'2px', color:'var(--warning)', fontWeight:700, fontSize:'0.85rem' }}>
-                              {o.rating} <FiStar fill="var(--warning)" size={12} />
+                            <div style={{ display:'flex', alignItems:'center', gap:'1px', color:'var(--warning)', fontWeight:700, fontSize:'0.75rem' }}>
+                              {o.rating} <FiStar fill="var(--warning)" size={10} />
                             </div>
                           )}
                         </div>
                       </td>
                       <td>
-                        <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}
+                        <select className="form-select" style={{ fontSize: '0.78rem', padding:'0.3rem', width:'110px' }}
                           value={o.deliveryBoyId?._id || o.deliveryBoyId || ''}
                           onChange={e => updateOrder(o._id, { deliveryBoyId: e.target.value })}>
                           <option value="">Unassigned</option>
@@ -131,18 +131,18 @@ export default function ManageOrdersPage() {
                         </select>
                       </td>
                       <td>
-                        <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
-                          <div style={{ display:'flex', gap:'0.4rem' }}>
-                            <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}
+                        <div style={{ display:'flex', flexDirection:'column', gap:'0.3rem' }}>
+                          <div style={{ display:'flex', gap:'0.3rem' }}>
+                            <select className="form-select" style={{ fontSize: '0.78rem', padding:'0.3rem', width:'100px' }}
                               value={o.status}
                               onChange={e => updateOrder(o._id, { status: e.target.value })}
                               disabled={updating === o._id}>
                               {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
                             </select>
                             {['Delivered', 'Cancelled'].includes(o.status) && (
-                              <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'0.4rem' }}
+                              <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'2px' }}
                                 onClick={() => handleDelete(o._id)}>
-                                <FiTrash2 />
+                                <FiTrash2 size={14} />
                               </button>
                             )}
                           </div>
