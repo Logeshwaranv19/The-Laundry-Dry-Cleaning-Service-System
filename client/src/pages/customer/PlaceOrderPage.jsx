@@ -6,8 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiTrash2, FiX, FiCheckCircle } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
-const FABRICS  = ['Cotton','Silk','Wool','Denim','Polyester','Linen','Leather'];
-const SERVICES = ['Wash','Dry Clean','Iron','Steam','Premium Wash','Stain Removal'];
+import { FABRICS, SERVICES } from '../../constants';
 
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -17,13 +16,14 @@ export default function PlaceOrderPage() {
   const [pricing, setPricing]     = useState([]);
   const [loyalty, setLoyalty]     = useState(0);
   const [subscription, setSub]    = useState(null);
-  const [items, setItems]         = useState([{ fabricType: 'Cotton', serviceType: 'Wash', quantity: 1 }]);
+  const [items, setItems]         = useState([{ fabricType: FABRICS[0], serviceType: SERVICES[0], quantity: 1 }]);
   const [pickupDate, setDate]     = useState('');
   const [pickupTime, setTime]     = useState('09:00');
   const [address, setAddress]     = useState('');
   const [ptsToUse, setPts]        = useState(0);
   const [loading, setLoading]     = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showRatesModal, setShowRatesModal]     = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function PlaceOrderPage() {
     return p ? p.pricePerPiece : null;
   };
 
-  const addItem = () => setItems([...items, { fabricType: 'Cotton', serviceType: 'Wash', quantity: 1 }]);
+  const addItem = () => setItems([...items, { fabricType: FABRICS[0], serviceType: SERVICES[0], quantity: 1 }]);
   const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i, key, val) => {
     const updated = [...items];
@@ -112,7 +112,10 @@ export default function PlaceOrderPage() {
               <div className="card" style={{ marginBottom: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Laundry Items</h2>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={addItem}><FiPlus /> Add Item</button>
+                  <div style={{ display:'flex', gap:'0.5rem' }}>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowRatesModal(true)}>📖 View Rates</button>
+                    <button type="button" className="btn btn-primary btn-sm" onClick={addItem}><FiPlus /> Add Item</button>
+                  </div>
                 </div>
                 {items.map((item, i) => (
                   <div key={i} style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', padding: '1rem', marginBottom: '0.75rem' }}>
@@ -289,6 +292,34 @@ export default function PlaceOrderPage() {
                 </p>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {showRatesModal && (
+        <div className="modal-overlay" onClick={() => setShowRatesModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Service Rates</h2>
+              <button className="btn-icon" onClick={() => setShowRatesModal(false)}><FiX size={20} /></button>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>Fabric</th><th>Service</th><th>Rate/pc</th></tr></thead>
+                <tbody>
+                  {pricing.map(p => (
+                    <tr key={p._id}>
+                      <td style={{ fontSize:'0.85rem' }}>{p.fabricType}</td>
+                      <td style={{ fontSize:'0.85rem' }}>{p.serviceType}</td>
+                      <td style={{ fontWeight:700, color:'var(--accent)' }}>₹{p.pricePerPiece}</td>
+                    </tr>
+                  ))}
+                  {pricing.length === 0 && <tr><td colSpan="3" style={{ textAlign:'center', padding:'2rem', color:'var(--text-secondary)' }}>No rates set yet</td></tr>}
+                </tbody>
+              </table>
+            </div>
+            <p style={{ marginTop:'1rem', fontSize:'0.8rem', color:'var(--text-secondary)', textAlign:'center' }}>
+              * If your combination is not listed, a default base rate of ₹50 will be applied.
+            </p>
           </div>
         </div>
       )}

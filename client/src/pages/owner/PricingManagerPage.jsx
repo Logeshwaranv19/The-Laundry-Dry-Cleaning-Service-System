@@ -3,12 +3,11 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-const FABRICS  = ['Cotton','Silk','Wool','Denim','Polyester','Linen','Leather'];
-const SERVICES = ['Wash','Dry Clean','Iron','Steam','Premium Wash','Stain Removal'];
+import { FABRICS, SERVICES } from '../../constants';
 
 export default function PricingManagerPage() {
   const [pricing, setPricing] = useState([]);
-  const [form, setForm]       = useState({ fabricType:'Cotton', serviceType:'Wash', pricePerPiece:'', description:'' });
+  const [form, setForm]       = useState({ fabricType: FABRICS[0], serviceType: SERVICES[0], pricePerPiece:'', description:'' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
 
@@ -25,7 +24,7 @@ export default function PricingManagerPage() {
       toast.success('Pricing saved!');
       const { data } = await api.get('/owner/pricing');
       setPricing(data);
-      setForm({ fabricType:'Cotton', serviceType:'Wash', pricePerPiece:'', description:'' });
+      setForm({ fabricType: FABRICS[0], serviceType: SERVICES[0], pricePerPiece:'', description:'' });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed');
     } finally { setSaving(false); }
