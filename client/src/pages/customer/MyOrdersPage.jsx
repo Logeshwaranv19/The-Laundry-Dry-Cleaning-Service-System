@@ -56,7 +56,8 @@ export default function MyOrdersPage() {
       toast.success('Order cancelled successfully');
       setOrders(prev => prev.map(o => o._id === id ? { ...o, status: 'Cancelled' } : o));
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to cancel order');
+      const msg = err.response?.data?.message || err.message || 'Failed to cancel order';
+      toast.error(msg);
     }
   };
 

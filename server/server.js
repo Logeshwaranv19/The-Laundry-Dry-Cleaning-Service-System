@@ -9,13 +9,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors({ 
-  origin: [
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    'https://the-laundry-dry-cleaning-service-sy.vercel.app',
-    'https://the-laundry-dry-cleaning-service-sy-plum.vercel.app',
-    'https://the-laundry-dry-cleaning-service-system-9i46.onrender.com'
-  ], 
+  origin: true, // Allow all origins for now to fix deployment issues
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true 
 }));
 app.use(express.json());
