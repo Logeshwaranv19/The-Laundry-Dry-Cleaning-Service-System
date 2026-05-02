@@ -52,23 +52,11 @@ exports.placeOrder = async (req, res) => {
       discountAmount: subscriptionDiscount + loyaltyDiscount,
       loyaltyPointsUsed: ptsUsed,
       loyaltyPointsEarned: pointsEarned,
-      loyaltyPointsAwarded: req.body.isPaid && pointsEarned > 0,
+      loyaltyPointsAwarded: false, // Awarded only after verification
       subscriptionDiscount,
-      paymentStatus: req.body.isPaid ? 'Paid' : 'Pending',
+      paymentStatus: req.body.isPaid ? 'Verification Required' : 'Pending',
       notes: notes || '',
     });
-
-    // If paid upfront, award loyalty points immediately
-    if (req.body.isPaid && pointsEarned > 0) {
-      customer.loyaltyPoints += pointsEarned;
-      await LoyaltyTransaction.create({
-        userId: customer._id, orderId: order._id,
-        type: 'earned', points: pointsEarned,
-        description: `Earned from paid order #${order._id}`,
-        balance: customer.loyaltyPoints,
-      });
-      await customer.save();
-    }
 
     // Deduct loyalty points used
     if (ptsUsed > 0) {
@@ -76,7 +64,7 @@ exports.placeOrder = async (req, res) => {
       await LoyaltyTransaction.create({
         userId: customer._id, orderId: order._id,
         type: 'redeemed', points: ptsUsed,
-        description: `Redeemed for order #${order._id}`,
+        description: `Redeemed for order #${order._id.toString().slice(-6)}`,
         balance: customer.loyaltyPoints,
       });
       await customer.save();
@@ -185,29 +173,13 @@ exports.payOrder = async (req, res) => {
     const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    if (order.paymentStatus === 'Paid') {
-      return res.status(400).json({ message: 'Order is already paid' });
+    if (order.paymentStatus !== 'Pending') {
+      return res.status(400).json({ message: 'Order is already marked as paid or verification is pending' });
     }
 
-    order.paymentStatus = 'Paid';
-    
-    // Award loyalty points if not already awarded
-    if (!order.loyaltyPointsAwarded && order.loyaltyPointsEarned > 0) {
-      const customer = await User.findById(req.user._id);
-      customer.loyaltyPoints += order.loyaltyPointsEarned;
-      order.loyaltyPointsAwarded = true;
-
-      await LoyaltyTransaction.create({
-        userId: customer._id, orderId: order._id,
-        type: 'earned', points: order.loyaltyPointsEarned,
-        description: `Earned from paid order #${order._id}`,
-        balance: customer.loyaltyPoints,
-      });
-      await customer.save();
-    }
-
+    order.paymentStatus = 'Verification Required';
     await order.save();
-    res.json({ message: 'Payment status updated to Paid', order });
+    res.json({ message: 'Payment submitted! Please wait for owner verification.', order });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

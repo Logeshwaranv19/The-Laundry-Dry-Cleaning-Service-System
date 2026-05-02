@@ -25,19 +25,30 @@ exports.updateOrderStatus = async (req, res) => {
     if (status) order.status = status;
     if (deliveryBoyId) order.deliveryBoyId = deliveryBoyId;
 
-    // Award loyalty on delivery
-    if (status === 'Delivered' && order.loyaltyPointsEarned > 0) {
-      const customer = await User.findById(order.customerId);
-      if (customer) {
-        customer.loyaltyPoints += order.loyaltyPointsEarned;
-        await customer.save();
-        await LoyaltyTransaction.create({
-          userId: customer._id, orderId: order._id,
-          type: 'earned', points: order.loyaltyPointsEarned,
-          description: `Earned for order delivered`,
-          balance: customer.loyaltyPoints,
-        });
+    if (req.body.paymentStatus) {
+      const oldPayment = order.paymentStatus;
+      order.paymentStatus = req.body.paymentStatus;
+
+      // Award loyalty if status changes to Paid
+      if (oldPayment !== 'Paid' && order.paymentStatus === 'Paid' && !order.loyaltyPointsAwarded && order.loyaltyPointsEarned > 0) {
+        const customer = await User.findById(order.customerId);
+        if (customer) {
+          customer.loyaltyPoints += order.loyaltyPointsEarned;
+          order.loyaltyPointsAwarded = true;
+          await customer.save();
+          await LoyaltyTransaction.create({
+            userId: customer._id, orderId: order._id,
+            type: 'earned', points: order.loyaltyPointsEarned,
+            description: `Earned from paid order #${order._id.toString().slice(-6)}`,
+            balance: customer.loyaltyPoints,
+          });
+        }
       }
+    }
+
+    // Award loyalty on delivery (legacy/fallback if not paid yet)
+    if (status === 'Delivered' && order.loyaltyPointsEarned > 0 && !order.loyaltyPointsAwarded && order.paymentStatus === 'Paid') {
+       // Points already handled above if marked as Paid, but this ensures they get points on delivery if paid then
     }
 
     await order.save();

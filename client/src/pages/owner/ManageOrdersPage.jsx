@@ -73,9 +73,17 @@ export default function ManageOrdersPage() {
                       <td>₹{o.totalAmount}</td>
                       <td style={{ fontSize:'0.85rem' }}>{o.pickupDate}<br /><span style={{ color:'var(--text-secondary)' }}>{o.pickupTime}</span></td>
                       <td>
-                        <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : 'badge-red'}`}>
-                          {o.paymentStatus || 'Pending'}
-                        </span>
+                        <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
+                          <span className={`badge ${o.paymentStatus === 'Paid' ? 'badge-green' : o.paymentStatus === 'Verification Required' ? 'badge-yellow' : 'badge-red'}`}>
+                            {o.paymentStatus || 'Pending'}
+                          </span>
+                          {o.paymentStatus !== 'Paid' && (
+                            <button className="btn btn-outline btn-sm" style={{ fontSize:'0.7rem', padding:'0.2rem' }}
+                              onClick={() => updateOrder(o._id, { paymentStatus: 'Paid' })}>
+                              Confirm Payment
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td><span className={`badge ${statusColor[o.status]}`}>{o.status}</span></td>
                       <td>
