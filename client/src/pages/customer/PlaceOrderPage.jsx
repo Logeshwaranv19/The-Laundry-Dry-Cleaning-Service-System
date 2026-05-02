@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiTrash2, FiX, FiCheckCircle } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 
 const FABRICS  = ['Cotton','Silk','Wool','Denim','Polyester','Linen','Leather'];
 const SERVICES = ['Wash','Dry Clean','Iron','Steam','Premium Wash','Stain Removal'];
@@ -12,6 +13,7 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function PlaceOrderPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [pricing, setPricing]     = useState([]);
   const [loyalty, setLoyalty]     = useState(0);
   const [subscription, setSub]    = useState(null);
@@ -94,10 +96,8 @@ export default function PlaceOrderPage() {
   const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Place New Order</h1>
           <p className="page-subtitle">Schedule your laundry pickup</p>
         </div>
@@ -216,7 +216,6 @@ export default function PlaceOrderPage() {
             </div>
           </div>
         </form>
-      </main>
 
       {showPaymentModal && (
         <div className="modal-overlay">
@@ -286,6 +285,6 @@ export default function PlaceOrderPage() {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 }

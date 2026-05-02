@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { FiPackage, FiStar, FiCreditCard, FiAlertCircle, FiPlusCircle, FiArrowRight } from 'react-icons/fi';
 
@@ -26,10 +26,8 @@ export default function CustomerDashboard() {
   const active = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Welcome back, <span className="gradient-text">{user?.name}!</span> 👋</h1>
           <p className="page-subtitle">Here's what's happening with your laundry today</p>
         </div>
@@ -129,7 +127,6 @@ export default function CustomerDashboard() {
             </div>
           )}
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

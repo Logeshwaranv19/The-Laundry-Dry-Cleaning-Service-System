@@ -22,6 +22,7 @@ import ManageOrdersPage    from './pages/owner/ManageOrdersPage';
 import PricingManagerPage  from './pages/owner/PricingManagerPage';
 import ComplaintsManager   from './pages/owner/ComplaintsManager';
 import SubscriptionManager from './pages/owner/SubscriptionManager';
+import DeliveryStaffPage  from './pages/owner/DeliveryStaffPage';
 
 // Delivery pages
 import MyDeliveries     from './pages/delivery/MyDeliveries';
@@ -64,6 +65,7 @@ const AppRoutes = () => {
       <Route path="/owner/pricing"        element={<ProtectedRoute allowedRoles={['owner']}><PricingManagerPage /></ProtectedRoute>} />
       <Route path="/owner/complaints"     element={<ProtectedRoute allowedRoles={['owner']}><ComplaintsManager /></ProtectedRoute>} />
       <Route path="/owner/subscriptions"  element={<ProtectedRoute allowedRoles={['owner']}><SubscriptionManager /></ProtectedRoute>} />
+      <Route path="/owner/delivery"       element={<ProtectedRoute allowedRoles={['owner']}><DeliveryStaffPage /></ProtectedRoute>} />
 
       {/* Delivery */}
       <Route path="/delivery/orders" element={<ProtectedRoute allowedRoles={['delivery']}><MyDeliveries /></ProtectedRoute>} />

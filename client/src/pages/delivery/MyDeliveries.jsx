@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { FiTruck, FiMapPin, FiPhone } from 'react-icons/fi';
@@ -33,10 +33,8 @@ export default function MyDeliveries() {
   const done    = orders.filter(o => o.status === 'Delivered');
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">My <span className="gradient-text">Deliveries</span></h1>
           <p className="page-subtitle">Orders assigned to you for pickup and delivery</p>
         </div>
@@ -125,7 +123,6 @@ export default function MyDeliveries() {
             ))}
           </div>
         )}
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

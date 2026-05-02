@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -31,10 +31,8 @@ export default function ComplaintsManager() {
   };
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Complaints Manager</h1>
           <p className="page-subtitle">Review and resolve customer quality complaints</p>
         </div>
@@ -98,7 +96,6 @@ export default function ComplaintsManager() {
             </div>
           </div>
         )}
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

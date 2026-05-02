@@ -1,7 +1,7 @@
 import ThemeSwitcher from './ThemeSwitcher';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiPlusCircle, FiList, FiStar, FiCreditCard, FiAlertCircle, FiLogOut, FiTruck, FiSettings, FiDollarSign } from 'react-icons/fi';
+import { FiHome, FiPlusCircle, FiList, FiStar, FiCreditCard, FiAlertCircle, FiLogOut, FiTruck, FiSettings, FiDollarSign, FiX } from 'react-icons/fi';
 
 const customerLinks = [
   { to: '/customer/dashboard',    icon: <FiHome />,        label: 'Dashboard' },
@@ -15,6 +15,7 @@ const customerLinks = [
 const ownerLinks = [
   { to: '/owner/dashboard',     icon: <FiHome />,       label: 'Dashboard' },
   { to: '/owner/orders',        icon: <FiList />,       label: 'Manage Orders' },
+  { to: '/owner/delivery',      icon: <FiTruck />,      label: 'Delivery Staff' },
   { to: '/owner/pricing',       icon: <FiDollarSign />, label: 'Pricing' },
   { to: '/owner/complaints',    icon: <FiAlertCircle />,label: 'Complaints' },
   { to: '/owner/subscriptions', icon: <FiCreditCard />, label: 'Plans' },
@@ -26,7 +27,7 @@ const deliveryLinks = [
 
 const roleLinks = { customer: customerLinks, owner: ownerLinks, delivery: deliveryLinks };
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const links = roleLinks[user?.role] || [];
@@ -34,9 +35,12 @@ export default function Sidebar() {
   const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-brand">
         <span>🧺</span> LaundryPro
+        <button className="sidebar-close" onClick={onClose}>
+          <FiX size={20} />
+        </button>
       </div>
       <nav className="sidebar-nav">
         {links.map(l => (

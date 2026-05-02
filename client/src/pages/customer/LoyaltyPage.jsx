@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 
 export default function LoyaltyPage() {
@@ -11,10 +11,8 @@ export default function LoyaltyPage() {
   }, []);
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Loyalty Points</h1>
           <p className="page-subtitle">Earn points on every order &amp; redeem at checkout</p>
         </div>
@@ -67,7 +65,6 @@ export default function LoyaltyPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { FiCheck, FiClock, FiTruck } from 'react-icons/fi';
 
@@ -15,16 +15,14 @@ export default function OrderTrackingPage() {
     api.get(`/customer/orders/${id}`).then(r => { setOrder(r.data); setLoading(false); });
   }, [id]);
 
-  if (loading) return <div className="layout"><Sidebar /><main className="main-content"><p style={{ color: 'var(--text-secondary)' }}>Loading order details…</p></main></div>;
-  if (!order) return <div className="layout"><Sidebar /><main className="main-content"><p>Order not found</p></main></div>;
+  if (loading) return <Layout><p style={{ color: 'var(--text-secondary)' }}>Loading order details…</p></Layout>;
+  if (!order) return <Layout><p>Order not found</p></Layout>;
 
   const currentIdx = STEPS.indexOf(order.status);
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Order Tracking</h1>
           <p className="page-subtitle">Order #{order._id.slice(-8).toUpperCase()}</p>
         </div>
@@ -89,7 +87,6 @@ export default function OrderTrackingPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { FiX, FiCheckCircle } from 'react-icons/fi';
@@ -51,10 +51,8 @@ export default function MyOrdersPage() {
   };
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">My Orders</h1>
           <p className="page-subtitle">View and track all your laundry orders</p>
         </div>
@@ -108,7 +106,6 @@ export default function MyOrdersPage() {
             </div>
           )}
         </div>
-      </main>
 
       {showPaymentModal && selectedOrder && (
         <div className="modal-overlay">
@@ -153,6 +150,6 @@ export default function MyOrdersPage() {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 }

@@ -20,7 +20,7 @@ export default function LoginPage() {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name}! 👋`);
       if (user.role === 'owner') navigate('/owner/dashboard');
-      else if (user.role === 'delivery') navigate('/delivery');
+      else if (user.role === 'delivery') navigate('/delivery/orders');
       else navigate('/customer/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

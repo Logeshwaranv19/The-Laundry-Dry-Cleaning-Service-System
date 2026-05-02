@@ -52,6 +52,28 @@ exports.getDeliveryBoys = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.createDeliveryBoy = async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+    if (!name || !email || !password || !phone)
+      return res.status(400).json({ message: 'All fields required' });
+
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ message: 'Email already registered' });
+
+    const user = await User.create({ name, email, password, phone, role: 'delivery' });
+    res.status(201).json({ message: 'Delivery staff created', user: { _id: user._id, name: user.name, email: user.email } });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+exports.deleteDeliveryBoy = async (req, res) => {
+  try {
+    const boy = await User.findOneAndDelete({ _id: req.params.id, role: 'delivery' });
+    if (!boy) return res.status(404).json({ message: 'Delivery staff not found' });
+    res.json({ message: 'Delivery staff removed' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 // ─── Pricing ─────────────────────────────────────────────────────────────────
 exports.createOrUpdatePricing = async (req, res) => {
   try {

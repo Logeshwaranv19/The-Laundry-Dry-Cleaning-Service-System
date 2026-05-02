@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
-  getAllOrders, updateOrderStatus, getDeliveryBoys,
+  getAllOrders, updateOrderStatus, getDeliveryBoys, createDeliveryBoy, deleteDeliveryBoy,
   createOrUpdatePricing, getPricing,
   getAllComplaints, resolveComplaint,
   createSubscription, getSubscriptions, updateSubscription,
@@ -16,6 +16,8 @@ router.get('/dashboard', getDashboardStats);
 router.get('/orders', getAllOrders);
 router.put('/orders/:id', updateOrderStatus);
 router.get('/delivery-boys', getDeliveryBoys);
+router.post('/delivery-boys', createDeliveryBoy);
+router.delete('/delivery-boys/:id', deleteDeliveryBoy);
 
 router.post('/pricing', createOrUpdatePricing);
 router.get('/pricing', getPricing);

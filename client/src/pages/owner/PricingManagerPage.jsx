@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -34,10 +34,8 @@ export default function PricingManagerPage() {
   const editPrice = (p) => setForm({ fabricType: p.fabricType, serviceType: p.serviceType, pricePerPiece: p.pricePerPiece, description: p.description || '' });
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Fabric-wise Pricing</h1>
           <p className="page-subtitle">Set prices per fabric type and service</p>
         </div>
@@ -97,7 +95,6 @@ export default function PricingManagerPage() {
             )}
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

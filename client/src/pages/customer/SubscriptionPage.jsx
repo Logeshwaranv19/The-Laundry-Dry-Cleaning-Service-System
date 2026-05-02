@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { FiX, FiCheckCircle } from 'react-icons/fi';
@@ -68,10 +68,8 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Subscription Plans</h1>
           <p className="page-subtitle">Choose a plan and save on every order</p>
         </div>
@@ -121,7 +119,6 @@ export default function SubscriptionPage() {
             })}
           </div>
         )}
-      </main>
 
       {showPaymentModal && selectedPlan && (
         <div className="modal-overlay">
@@ -191,6 +188,6 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 }

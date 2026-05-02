@@ -22,7 +22,7 @@ export default function SignupPage() {
       const user = await signup(form);
       toast.success(`Account created! Welcome, ${user.name}! 🎉`);
       if (user.role === 'owner') navigate('/owner/dashboard');
-      else if (user.role === 'delivery') navigate('/delivery');
+      else if (user.role === 'delivery') navigate('/delivery/orders');
       else navigate('/customer/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed');
@@ -55,19 +55,6 @@ export default function SignupPage() {
       <div className="auth-card">
         <h1 className="auth-title">Create Account</h1>
         <p className="auth-subtitle">Join LaundryPro — fresh clothes delivered!</p>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label className="form-label">I am a...</label>
-          <div className="role-selector">
-            {['customer','owner','delivery'].map(r => (
-              <button key={r} type="button" id={`role-${r}`}
-                className={`role-btn ${form.role === r ? 'selected' : ''}`}
-                onClick={() => set('role', r)}>
-                {r === 'customer' ? '👤 Customer' : r === 'owner' ? '🏪 Owner' : '🚴 Delivery'}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {error && <div className="error-msg">{error}</div>}
 

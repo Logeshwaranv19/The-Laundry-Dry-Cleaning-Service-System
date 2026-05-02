@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -45,10 +45,8 @@ export default function SubscriptionManager() {
   };
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Subscription Plans</h1>
           <p className="page-subtitle">Create and manage customer subscription packages</p>
         </div>
@@ -98,7 +96,6 @@ export default function SubscriptionManager() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }

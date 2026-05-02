@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { FiPackage, FiDollarSign, FiUsers, FiAlertCircle } from 'react-icons/fi';
 
@@ -21,10 +21,8 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="layout">
-      <Sidebar />
-      <main className="main-content">
-        <div className="page-header">
+    <Layout>
+      <div className="page-header">
           <h1 className="page-title">Owner <span className="gradient-text">Dashboard</span></h1>
           <p className="page-subtitle">Overview of your laundry business operations</p>
         </div>
@@ -75,7 +73,6 @@ export default function OwnerDashboard() {
             </div>
           )}
         </div>
-      </main>
-    </div>
-  );
-}
+      </Layout>
+    );
+  }
