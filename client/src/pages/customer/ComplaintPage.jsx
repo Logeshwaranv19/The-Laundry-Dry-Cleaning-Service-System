@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { FiTrash2 } from 'react-icons/fi';
 
 const statusColor = { 'Open':'badge-yellow', 'In Review':'badge-blue', 'Resolved':'badge-green', 'Rejected':'badge-red' };
 
@@ -44,6 +45,17 @@ export default function ComplaintPage() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to file complaint');
     } finally { setLoading(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Remove this complaint?')) return;
+    try {
+      await api.delete(`/customer/complaints/${id}`);
+      toast.success('Complaint removed');
+      setComplaints(prev => prev.filter(c => c._id !== id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   return (
@@ -104,7 +116,10 @@ export default function ComplaintPage() {
                         <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Order #{c.orderId?._id?.slice(-8).toUpperCase() || 'N/A'}</div>
                         <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{new Date(c.createdAt).toLocaleDateString()}</div>
                       </div>
-                      <span className={`badge ${statusColor[c.status] || 'badge-blue'}`}>{c.status}</span>
+                      <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+                        <span className={`badge ${statusColor[c.status] || 'badge-blue'}`}>{c.status}</span>
+                        <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'2px' }} onClick={() => handleDelete(c._id)}><FiTrash2 size={16} /></button>
+                      </div>
                     </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{c.description}</p>
                     {c.photoUrl && <img src={`${API_BASE_URL}${c.photoUrl}`} alt="Evidence" className="complaint-photo" onClick={() => window.open(`${API_BASE_URL}${c.photoUrl}`, '_blank')} />}

@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import { API_BASE_URL } from '../../api/axios';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { FiTrash2 } from 'react-icons/fi';
 
 const statusColor = { 'Open':'badge-yellow','In Review':'badge-blue','Resolved':'badge-green','Rejected':'badge-red' };
 
@@ -29,6 +30,17 @@ export default function ComplaintsManager() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this complaint permanently?')) return;
+    try {
+      await api.delete(`/owner/complaints/${id}`);
+      toast.success('Complaint deleted');
+      setComplaints(prev => prev.filter(c => c._id !== id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   return (
@@ -64,7 +76,12 @@ export default function ComplaintsManager() {
                       </td>
                       <td><span className={`badge ${statusColor[c.status]}`}>{c.status}</span></td>
                       <td style={{ color:'var(--text-secondary)', fontSize:'0.82rem' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
-                      <td><button className="btn btn-outline btn-sm" onClick={() => openModal(c)}>Respond</button></td>
+                      <td>
+                        <div style={{ display:'flex', gap:'0.4rem' }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => openModal(c)}>Respond</button>
+                          <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'0.4rem' }} onClick={() => handleDelete(c._id)}><FiTrash2 /></button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

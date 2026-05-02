@@ -4,7 +4,7 @@ const { protect, authorize } = require('../middleware/auth');
 const {
   getAllOrders, updateOrderStatus, deleteOrder, deleteAllFinishedOrders, getDeliveryBoys, createDeliveryBoy, deleteDeliveryBoy,
   createOrUpdatePricing, getPricing, deletePricing,
-  getAllComplaints, resolveComplaint,
+  getAllComplaints, resolveComplaint, deleteComplaint,
   createSubscription, getSubscriptions, updateSubscription,
   getDashboardStats
 } = require('../controllers/ownerController');
@@ -27,6 +27,7 @@ router.delete('/pricing/:id', deletePricing);
 
 router.get('/complaints', getAllComplaints);
 router.put('/complaints/:id', resolveComplaint);
+router.delete('/complaints/:id', deleteComplaint);
 
 router.post('/subscriptions', createSubscription);
 router.get('/subscriptions', getSubscriptions);

@@ -7,7 +7,7 @@ const {
   getLoyalty,
   getSubscriptions, subscribe,
   fileComplaint, getMyComplaints,
-  payOrder, cancelOrder, deleteOrder, deleteAllFinishedOrders
+  payOrder, cancelOrder, deleteOrder, deleteAllFinishedOrders, deleteComplaint
 } = require('../controllers/customerController');
 
 router.use(protect, authorize('customer'));
@@ -25,6 +25,7 @@ router.post('/subscriptions/subscribe', subscribe);
 
 router.post('/complaints', upload.single('photo'), fileComplaint);
 router.get('/complaints', getMyComplaints);
+router.delete('/complaints/:id', deleteComplaint);
 
 // Payment and Cancellation routes
 router.patch('/orders/:id/pay', payOrder);

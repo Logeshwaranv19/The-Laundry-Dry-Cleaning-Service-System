@@ -158,6 +158,14 @@ exports.resolveComplaint = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deleteComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findByIdAndDelete(req.params.id);
+    if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
+    res.json({ message: 'Complaint deleted permanently' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 // ─── Subscriptions ───────────────────────────────────────────────────────────
 exports.createSubscription = async (req, res) => {
   try {

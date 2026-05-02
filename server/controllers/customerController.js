@@ -252,6 +252,14 @@ exports.deleteOrder = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deleteComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findOneAndDelete({ _id: req.params.id, customerId: req.user._id });
+    if (!complaint) return res.status(404).json({ message: 'Complaint not found or not yours' });
+    res.json({ message: 'Complaint removed' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.deleteAllFinishedOrders = async (req, res) => {
   try {
     const result = await Order.deleteMany({ 
