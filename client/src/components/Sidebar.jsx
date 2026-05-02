@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-brand">
-        <span>🧺</span> LaundryPro
+        <span>🧺</span> Laundry
         <button className="sidebar-close" onClick={onClose}>
           <FiX size={20} />
         </button>

@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       <div className="auth-card">
         <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to your LaundryPro account</p>
+        <p className="auth-subtitle">Sign in to your Laundry account</p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

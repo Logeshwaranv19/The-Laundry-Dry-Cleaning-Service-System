@@ -54,7 +54,7 @@ export default function SignupPage() {
 
       <div className="auth-card">
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Join LaundryPro — fresh clothes delivered!</p>
+        <p className="auth-subtitle">Join Laundry — fresh clothes delivered!</p>
 
         {error && <div className="error-msg">{error}</div>}
 

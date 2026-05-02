@@ -17,7 +17,7 @@ export default function Layout({ children }) {
       {/* Mobile Header */}
       <header className="mobile-header">
         <div className="sidebar-brand" style={{ border: 'none', marginBottom: 0, padding: 0 }}>
-          <span>🧺</span> LaundryPro
+          <span>🧺</span> Laundry
         </div>
         <button className="mobile-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
