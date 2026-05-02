@@ -7,7 +7,7 @@ const userSubscriptionSchema = new mongoose.Schema({
   endDate:   { type: Date, required: true },
   active:    { type: Boolean, default: true },
   usedPickups: { type: Number, default: 0 },
-  paymentStatus: { type: String, enum: ['Paid', 'Pending'], default: 'Pending' },
+  paymentStatus: { type: String, enum: ['Paid', 'Pending', 'Verification Required'], default: 'Pending' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('UserSubscription', userSubscriptionSchema);
