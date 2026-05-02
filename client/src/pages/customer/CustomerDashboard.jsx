@@ -14,14 +14,11 @@ export default function CustomerDashboard() {
   const { user } = useAuth();
   const [orders, setOrders]   = useState([]);
   const [loyalty, setLoyalty] = useState(0);
-  const [pricing, setPricing] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     Promise.all([
       api.get('/customer/orders').then(r => setOrders(r.data)),
       api.get('/customer/loyalty').then(r => setLoyalty(r.data.balance)),
-      api.get('/pricing').then(r => setPricing(r.data.slice(0, 8))), // Show top 8 combinations
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -93,24 +90,6 @@ export default function CustomerDashboard() {
           </Link>
         </div>
 
-        {/* Pricing Overview */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '2.5rem 0 1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>Pricing Overview</h2>
-          <Link to="/customer/place-order" className="btn btn-outline btn-sm">Estimate Cost</Link>
-        </div>
-        <div className="grid grid-4" style={{ marginBottom: '2.5rem' }}>
-          {loading ? [1,2,3,4].map(i => <div key={i} className="card" style={{ height:'80px', opacity:0.5 }}></div>) : 
-            pricing.map(p => (
-              <div key={p._id} className="card" style={{ padding:'1rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <div>
-                  <div style={{ fontSize:'0.75rem', fontWeight:800, color:'var(--text-secondary)', textTransform:'uppercase' }}>{p.fabricType}</div>
-                  <div style={{ fontSize:'0.9rem', fontWeight:600 }}>{p.serviceType}</div>
-                </div>
-                <div style={{ fontSize:'1.25rem', fontWeight:800, color:'var(--accent)' }}>₹{p.pricePerPiece}</div>
-              </div>
-            ))
-          }
-        </div>
 
         {/* Recent Orders */}
         <div className="card">
