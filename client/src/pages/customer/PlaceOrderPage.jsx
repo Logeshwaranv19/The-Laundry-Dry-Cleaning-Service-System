@@ -38,7 +38,7 @@ export default function PlaceOrderPage() {
 
   const getPrice = (fabric, service) => {
     const p = pricing.find(x => x.fabricType === fabric && x.serviceType === service);
-    return p ? p.pricePerPiece : 50;
+    return p ? p.pricePerPiece : null;
   };
 
   const addItem = () => setItems([...items, { fabricType: 'Cotton', serviceType: 'Wash', quantity: 1 }]);
@@ -49,7 +49,10 @@ export default function PlaceOrderPage() {
     setItems(updated);
   };
 
-  const subtotal = items.reduce((sum, it) => sum + getPrice(it.fabricType, it.serviceType) * it.quantity, 0);
+  const subtotal = items.reduce((sum, it) => {
+    const price = getPrice(it.fabricType, it.serviceType);
+    return sum + (price || 50) * it.quantity;
+  }, 0);
   
   // Calculate subscription discount
   let subscriptionDiscount = 0;
@@ -134,7 +137,11 @@ export default function PlaceOrderPage() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
                       <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                        ₹{getPrice(item.fabricType, item.serviceType)} × {item.quantity} = <strong style={{ color: 'var(--accent)' }}>₹{getPrice(item.fabricType, item.serviceType) * item.quantity}</strong>
+                        {getPrice(item.fabricType, item.serviceType) ? (
+                          <>₹{getPrice(item.fabricType, item.serviceType)} × {item.quantity} = <strong style={{ color: 'var(--accent)' }}>₹{getPrice(item.fabricType, item.serviceType) * item.quantity}</strong></>
+                        ) : (
+                          <span style={{ color:'var(--warning)', fontWeight:600 }}>⚠️ Price not set (Defaulting to ₹50)</span>
+                        )}
                       </span>
                       {items.length > 1 && <button type="button" className="btn btn-danger btn-sm" onClick={() => removeItem(i)}><FiTrash2 /></button>}
                     </div>
