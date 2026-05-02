@@ -18,12 +18,12 @@ export default function MyDeliveries() {
     api.get('/delivery/assigned').then(r => { setOrders(r.data); setLoading(false); });
   }, []);
 
-  const updateStatus = async (orderId, status) => {
+  const updateOrder = async (orderId, payload) => {
     setUpdating(orderId);
     try {
-      const { data } = await api.put(`/delivery/orders/${orderId}/status`, { status });
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: data.order.status } : o));
-      toast.success(`Status updated to "${status}"!`);
+      const { data } = await api.put(`/delivery/orders/${orderId}/status`, payload);
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, ...data.order } : o));
+      toast.success('Order updated successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally { setUpdating(null); }
@@ -76,34 +76,43 @@ export default function MyDeliveries() {
                     </div>
                   </div>
 
-                  <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
-                    {o.status === 'Placed' && (
-                      <button className="btn btn-outline" disabled={updating === o._id}
-                        onClick={() => updateStatus(o._id, 'Picked Up')}>
-                        {updating === o._id ? '…' : '📦 Mark Picked Up (From Customer)'}
-                      </button>
-                    )}
-                    {o.status === 'Picked Up' && (
-                      <span style={{ color:'var(--accent)', fontSize:'0.85rem', fontWeight:600 }}>🚚 Dropped at Shop - Waiting for Wash</span>
-                    )}
-                    {o.status === 'Processing' && (
-                      <span style={{ color:'var(--badge-yellow-text)', fontSize:'0.85rem', fontWeight:600 }}>🫧 Washing in Progress...</span>
-                    )}
-                    {(o.status === 'Ready' || o.status === 'Out for Delivery') && (
-                      <button className="btn btn-success" style={{ fontWeight:700, padding:'0.75rem' }} disabled={updating === o._id}
-                        onClick={() => updateStatus(o._id, 'Delivered')}>
-                        {updating === o._id ? '…' : '✅ Mark Delivered (To Customer)'}
-                      </button>
-                    )}
-                    {o.status === 'Ready' && (
-                      <button className="btn btn-outline btn-sm" disabled={updating === o._id}
-                        onClick={() => updateStatus(o._id, 'Out for Delivery')}>
-                        {updating === o._id ? '…' : '🚴 Start Final Delivery'}
-                      </button>
-                    )}
-                    {o.status === 'Delivered' && (
-                      <span style={{ color:'var(--success)', fontSize:'0.88rem', fontWeight:600 }}>✅ Task Completed</span>
-                    )}
+                  <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem', minWidth:'180px' }}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
+                      <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:600, textTransform:'uppercase' }}>Order Status</div>
+                      {o.status === 'Placed' && (
+                        <button className="btn btn-primary" disabled={updating === o._id}
+                          onClick={() => updateOrder(o._id, { status: 'Picked Up' })}>
+                          📦 Pick Up From Customer
+                        </button>
+                      )}
+                      {(o.status === 'Ready' || o.status === 'Out for Delivery') && (
+                        <button className="btn btn-success" disabled={updating === o._id}
+                          onClick={() => updateOrder(o._id, { status: 'Delivered' })}>
+                          ✅ Mark Delivered
+                        </button>
+                      )}
+                      {o.status === 'Ready' && (
+                        <button className="btn btn-outline btn-sm" disabled={updating === o._id}
+                          onClick={() => updateOrder(o._id, { status: 'Out for Delivery' })}>
+                          🚴 Start Final Delivery
+                        </button>
+                      )}
+                      {['Picked Up', 'Processing', 'Delivered'].includes(o.status) && (
+                         <span className={`badge ${statusColor[o.status]}`} style={{ textAlign:'center', padding:'0.5rem' }}>{o.status}</span>
+                      )}
+                    </div>
+
+                    <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem', borderTop:'1px solid var(--border)', paddingTop:'0.75rem' }}>
+                      <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:600, textTransform:'uppercase' }}>Payment</div>
+                      {o.paymentStatus === 'Paid' ? (
+                        <span className="badge badge-green" style={{ textAlign:'center', padding:'0.5rem' }}>💰 Paid</span>
+                      ) : (
+                        <button className="btn btn-outline btn-sm" style={{ color:'var(--success)', borderColor:'var(--success)' }}
+                          onClick={() => updateOrder(o._id, { paymentStatus: 'Paid' })}>
+                          💵 Confirm Cash Received
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

@@ -13,26 +13,30 @@ exports.getAssignedOrders = async (req, res) => {
 
 exports.updateDeliveryStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, paymentStatus } = req.body;
     const allowedStatuses = ['Picked Up', 'Out for Delivery', 'Delivered'];
     
     const order = await Order.findOne({ _id: req.params.id, deliveryBoyId: req.user._id });
     if (!order) return res.status(404).json({ message: 'Order not found or not assigned to you' });
 
-    if (!allowedStatuses.includes(status))
+    if (status && !allowedStatuses.includes(status))
       return res.status(400).json({ message: 'Invalid status for delivery update' });
     
-    if (order.status === 'Cancelled' || order.status === 'Delivered') {
-      return res.status(400).json({ message: `Cannot update status of a ${order.status} order` });
+    if (order.status === 'Cancelled' || (status === 'Delivered' && order.status === 'Delivered')) {
+      // Allow re-saving delivered orders if only updating payment
+    } else if (order.status === 'Delivered') {
+       return res.status(400).json({ message: `Cannot update status of a delivered order` });
     }
 
-    order.status = status;
+    if (status) order.status = status;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
 
-    // Award loyalty points on delivery (only if not already awarded during placement)
-    if (status === 'Delivered' && order.loyaltyPointsEarned > 0 && !order.loyaltyPointsAwarded) {
+    // Award loyalty points on delivery
+    if (order.status === 'Delivered' && order.loyaltyPointsEarned > 0 && !order.loyaltyPointsAwarded) {
       const customer = await User.findById(order.customerId);
       if (customer) {
         customer.loyaltyPoints += order.loyaltyPointsEarned;
+        order.loyaltyPointsAwarded = true;
         await customer.save();
         await LoyaltyTransaction.create({
           userId: customer._id, orderId: order._id,
@@ -44,7 +48,7 @@ exports.updateDeliveryStatus = async (req, res) => {
     }
 
     await order.save();
-    res.json({ message: `Status updated to ${status}`, order });
+    res.json({ message: `Order updated successfully`, order });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
