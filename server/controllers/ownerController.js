@@ -56,6 +56,20 @@ exports.updateOrderStatus = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (!['Delivered', 'Cancelled'].includes(order.status)) {
+      return res.status(400).json({ message: 'Only delivered or cancelled orders can be deleted from history' });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Order deleted from records' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.getDeliveryBoys = async (req, res) => {
   try {
     const boys = await User.find({ role: 'delivery' }).select('name email phone');

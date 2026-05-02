@@ -237,3 +237,17 @@ exports.cancelOrder = async (req, res) => {
     res.status(500).json({ message: 'Internal server error during cancellation' });
   }
 };
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (!['Delivered', 'Cancelled'].includes(order.status)) {
+      return res.status(400).json({ message: 'Only delivered or cancelled orders can be removed from history' });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Order removed from history' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};

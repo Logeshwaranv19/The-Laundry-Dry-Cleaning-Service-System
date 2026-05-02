@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { FiTrash2 } from 'react-icons/fi';
 
 const STATUS_OPTIONS = ['Placed','Picked Up','Processing','Ready','Out for Delivery','Delivered','Cancelled'];
 const statusColor = {
@@ -32,6 +33,17 @@ export default function ManageOrdersPage() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally { setUpdating(null); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this order permanently?')) return;
+    try {
+      await api.delete(`/owner/orders/${id}`);
+      toast.success('Order deleted');
+      setOrders(prev => prev.filter(o => o._id !== id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   const filtered = orders.filter(o =>
@@ -96,12 +108,20 @@ export default function ManageOrdersPage() {
                       </td>
                       <td>
                         <div style={{ display:'flex', flexDirection:'column', gap:'0.4rem' }}>
-                          <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}
-                            value={o.status}
-                            onChange={e => updateOrder(o._id, { status: e.target.value })}
-                            disabled={updating === o._id}>
-                            {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-                          </select>
+                          <div style={{ display:'flex', gap:'0.4rem' }}>
+                            <select className="form-select" style={{ fontSize: '0.82rem', padding:'0.4rem 0.6rem' }}
+                              value={o.status}
+                              onChange={e => updateOrder(o._id, { status: e.target.value })}
+                              disabled={updating === o._id}>
+                              {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                            </select>
+                            {['Delivered', 'Cancelled'].includes(o.status) && (
+                              <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'0.4rem' }}
+                                onClick={() => handleDelete(o._id)}>
+                                <FiTrash2 />
+                              </button>
+                            )}
+                          </div>
                           
                           {o.status === 'Picked Up' && (
                             <button className="btn btn-primary btn-sm" style={{ fontSize:'0.7rem', padding:'0.2rem' }} onClick={() => updateOrder(o._id, { status: 'Processing' })}>

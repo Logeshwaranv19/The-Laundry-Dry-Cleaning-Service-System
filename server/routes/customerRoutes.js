@@ -7,7 +7,7 @@ const {
   getLoyalty,
   getSubscriptions, subscribe,
   fileComplaint, getMyComplaints,
-  payOrder, cancelOrder
+  payOrder, cancelOrder, deleteOrder
 } = require('../controllers/customerController');
 
 router.use(protect, authorize('customer'));
@@ -15,6 +15,7 @@ router.use(protect, authorize('customer'));
 router.post('/orders', placeOrder);
 router.get('/orders', getMyOrders);
 router.get('/orders/:id', getOrderById);
+router.delete('/orders/:id', deleteOrder);
 
 router.get('/loyalty', getLoyalty);
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiX, FiCheckCircle } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiTrash2 } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 
 const statusColor = {
@@ -61,6 +61,17 @@ export default function MyOrdersPage() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Remove this order from your history?')) return;
+    try {
+      await api.delete(`/customer/orders/${id}`);
+      toast.success('Order removed from history');
+      setOrders(prev => prev.filter(o => o._id !== id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
   return (
     <Layout>
       <div className="page-header">
@@ -110,6 +121,11 @@ export default function MyOrdersPage() {
                           )}
                           {o.status === 'Placed' && (
                             <button className="btn btn-danger btn-sm" onClick={() => handleCancel(o._id)}>Cancel</button>
+                          )}
+                          {['Delivered', 'Cancelled'].includes(o.status) && (
+                            <button className="btn btn-icon" style={{ color:'var(--danger)' }} onClick={() => handleDelete(o._id)}>
+                              <FiTrash2 />
+                            </button>
                           )}
                         </div>
                       </td>

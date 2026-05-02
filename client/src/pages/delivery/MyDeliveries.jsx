@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { FiTruck, FiMapPin, FiPhone } from 'react-icons/fi';
+import { FiTruck, FiMapPin, FiPhone, FiTrash2 } from 'react-icons/fi';
 
 const statusColor = {
   'Placed':'badge-blue','Picked Up':'badge-purple','Processing':'badge-yellow',
@@ -27,6 +27,17 @@ export default function MyDeliveries() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally { setUpdating(null); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Remove this completed task from your list?')) return;
+    try {
+      await api.delete(`/delivery/orders/${id}`);
+      toast.success('Task removed');
+      setOrders(prev => prev.filter(o => o._id !== id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   const active  = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
@@ -61,6 +72,11 @@ export default function MyDeliveries() {
                     <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', marginBottom:'0.5rem' }}>
                       <span style={{ fontFamily:'monospace', fontWeight:700, fontSize:'1rem' }}>#{o._id.slice(-8).toUpperCase()}</span>
                       <span className={`badge ${statusColor[o.status]}`}>{o.status}</span>
+                      {['Delivered', 'Cancelled'].includes(o.status) && (
+                        <button className="btn btn-icon" style={{ color:'var(--danger)', padding:'2px' }} onClick={() => handleDelete(o._id)}>
+                          <FiTrash2 size={16} />
+                        </button>
+                      )}
                     </div>
 
                     <div style={{ display:'flex', gap:'1.5rem', flexWrap:'wrap', fontSize:'0.88rem', color:'var(--text-secondary)' }}>
