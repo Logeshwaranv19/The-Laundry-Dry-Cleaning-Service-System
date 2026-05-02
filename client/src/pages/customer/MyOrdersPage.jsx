@@ -79,8 +79,21 @@ export default function MyOrdersPage() {
           <p className="page-subtitle">View and track all your laundry orders</p>
         </div>
         <div className="card">
-          <div style={{ marginBottom: '1.25rem' }}>
-            <input className="form-input" placeholder="Search by status or order ID…" value={search} onChange={e => setSearch(e.target.value)} />
+          <div style={{ marginBottom: '1.25rem', display:'flex', gap:'1rem', flexWrap:'wrap' }}>
+            <input className="form-input" style={{ flex:1 }} placeholder="Search by status or order ID…" value={search} onChange={e => setSearch(e.target.value)} />
+            {orders.some(o => ['Delivered', 'Cancelled'].includes(o.status)) && (
+              <button className="btn btn-outline btn-sm" style={{ color:'var(--danger)', borderColor:'var(--danger)' }}
+                onClick={async () => {
+                  if (!window.confirm('Remove all finished orders from your history?')) return;
+                  try {
+                    await api.delete('/customer/orders/delete-all/finished');
+                    toast.success('History cleared');
+                    setOrders(prev => prev.filter(o => !['Delivered', 'Cancelled'].includes(o.status)));
+                  } catch (err) { toast.error('Clear history failed'); }
+                }}>
+                🗑️ Clear History
+              </button>
+            )}
           </div>
           {loading ? <p style={{ color: 'var(--text-secondary)' }}>Loading…</p> : filtered.length === 0 ? (
             <div className="empty-state"><div className="icon">📦</div><p>No orders found</p></div>

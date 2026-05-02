@@ -111,3 +111,13 @@ exports.deleteOrder = async (req, res) => {
     res.json({ message: 'Order removed from your list' });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
+
+exports.deleteAllFinishedTasks = async (req, res) => {
+  try {
+    const result = await Order.deleteMany({ 
+      deliveryBoyId: req.user._id, 
+      status: { $in: ['Delivered', 'Cancelled'] } 
+    });
+    res.json({ message: `${result.deletedCount} tasks removed from your list` });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};

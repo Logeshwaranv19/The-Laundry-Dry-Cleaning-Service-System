@@ -45,9 +45,24 @@ export default function MyDeliveries() {
 
   return (
     <Layout>
-      <div className="page-header">
-          <h1 className="page-title">My <span className="gradient-text">Deliveries</span></h1>
-          <p className="page-subtitle">Orders assigned to you for pickup and delivery</p>
+      <div className="page-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'1rem' }}>
+          <div>
+            <h1 className="page-title">My <span className="gradient-text">Deliveries</span></h1>
+            <p className="page-subtitle">Orders assigned to you for pickup and delivery</p>
+          </div>
+          {orders.some(o => ['Delivered', 'Cancelled'].includes(o.status)) && (
+            <button className="btn btn-outline btn-sm" style={{ color:'var(--danger)', borderColor:'var(--danger)' }}
+              onClick={async () => {
+                if (!window.confirm('Remove all completed and cancelled tasks from your list?')) return;
+                try {
+                  await api.delete('/delivery/orders/delete-all/finished');
+                  toast.success('List cleared');
+                  setOrders(prev => prev.filter(o => !['Delivered', 'Cancelled'].includes(o.status)));
+                } catch (err) { toast.error('Clear failed'); }
+              }}>
+              🗑️ Clear Finished Tasks
+            </button>
+          )}
         </div>
 
         <div className="grid grid-2" style={{ marginBottom: '2rem' }}>

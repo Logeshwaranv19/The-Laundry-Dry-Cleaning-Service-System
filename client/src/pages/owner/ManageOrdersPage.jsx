@@ -59,10 +59,25 @@ export default function ManageOrdersPage() {
 
         <div className="card">
           <div style={{ marginBottom: '1.25rem' }}>
-            <select className="form-select" style={{ maxWidth: '220px' }} value={filter} onChange={e => setFilter(e.target.value)}>
-              <option value="">All Orders</option>
-              {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-            </select>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <select className="form-select" style={{ maxWidth: '220px' }} value={filter} onChange={e => setFilter(e.target.value)}>
+                <option value="">All Orders</option>
+                {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+              </select>
+              {orders.some(o => ['Delivered', 'Cancelled'].includes(o.status)) && (
+                <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
+                  onClick={async () => {
+                    if (!window.confirm('Delete ALL delivered and cancelled orders?')) return;
+                    try {
+                      await api.delete('/owner/orders/delete-all/finished');
+                      toast.success('Finished orders cleared');
+                      setOrders(prev => prev.filter(o => !['Delivered', 'Cancelled'].includes(o.status)));
+                    } catch (err) { toast.error('Delete all failed'); }
+                  }}>
+                  🗑️ Delete All Finished
+                </button>
+              )}
+            </div>
           </div>
 
           {loading ? <p style={{ color: 'var(--text-secondary)' }}>Loading…</p> : filtered.length === 0 ? (

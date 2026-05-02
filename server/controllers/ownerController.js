@@ -70,6 +70,13 @@ exports.deleteOrder = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deleteAllFinishedOrders = async (req, res) => {
+  try {
+    const result = await Order.deleteMany({ status: { $in: ['Delivered', 'Cancelled'] } });
+    res.json({ message: `${result.deletedCount} orders deleted from records` });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.getDeliveryBoys = async (req, res) => {
   try {
     const boys = await User.find({ role: 'delivery' }).select('name email phone');
